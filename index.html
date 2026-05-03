@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Dutch Auto-Speak Trainer</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root { --dutch-orange: #ff4f00; --dutch-blue: #21468b; --bg: #f0f2f5; --success: #28a745; --danger: #dc3545; }
+        body, html { height: 100%; margin: 0; padding: 0; font-family: -apple-system, sans-serif; background: var(--bg); overflow: hidden; }
+
+        .setup-box, .summary-box { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; max-width: 450px; background: white; padding: 30px 20px;
+            border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100;
+        }
+        .summary-box { display: none; max-height: 85vh; overflow-y: auto; border-top: 10px solid var(--dutch-orange); }
+
+        .progress-container { width: 100%; background: #ddd; height: 6px; }
+        #progress-fill { height: 100%; width: 0%; background: var(--success); transition: width 0.3s ease; }
+
+        .chat-container { display: none; height: 100%; flex-direction: column; max-width: 500px; margin: 0 auto; background: white; }
+        .stats-bar { background: #222; color: #fff; padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 13px; }
+        .stat-item { display: flex; justify-content: space-between; padding: 0 10px; }
+        .chat-header { background: var(--dutch-orange); color: white; padding: 12px; text-align: center; font-weight: bold; }
+
+        #chat-window { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #f9f9f9; }
+        #suggestion-box { background: #fff9c4; padding: 10px; text-align: center; font-style: italic; font-size: 14px; border-bottom: 1px solid #ddd; }
+
+        .message { max-width: 85%; padding: 12px; border-radius: 18px; font-size: 16px; position: relative; }
+        .bot { align-self: flex-start; background: #e9e9eb; }
+        .user { align-self: flex-end; background: var(--dutch-blue); color: white; }
+        .speaker-btn { cursor: pointer; margin-left: 8px; font-size: 18px; border: 1px solid #ccc; border-radius: 50%; padding: 2px; }
+
+        .input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 8px; background: white; padding-bottom: env(safe-area-inset-bottom, 20px); }
+        input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 25px; font-size: 16px; outline: none; }
+        button.send-btn { background: var(--dutch-orange); color: white; border: none; padding: 12px 20px; border-radius: 25px; font-weight: bold; }
+        
+        .review-list { text-align: left; margin-top: 20px; border-collapse: collapse; width: 100%; font-size: 14px; }
+        .review-list td, th { padding: 8px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<div class="setup-box" id="setup">
+    <h2 style="margin-top:0">🇳🇱 Dutch Audio Pro</h2>
+    <p>Upload <b>.xlsx</b> or <b>.csv</b></p>
+    <input type="file" id="file-input" accept=".xlsx, .csv" style="width:100%; margin-bottom:20px;">
+    <button onclick="handleFile()" style="padding: 12px 25px; border-radius: 25px; background: var(--dutch-orange); color: white; border: none; font-weight: bold;">Start Learning</button>
+</div>
+
+<div class="chat-container" id="chat-ui">
+    <div class="chat-header">DUTCH PRACTICE</div>
+    <div class="progress-container"><div id="progress-fill"></div></div>
+    <div class="stats-bar">
+        <div class="stat-item">Correct: <span id="stat-correct" style="color:#0f0">0</span></div>
+        <div class="stat-item">Progress: <span id="stat-progress">0/0</span></div>
+        <div class="stat-item">Wrong: <span id="stat-wrong" style="color:#f44">0</span></div>
+        <div class="stat-item">Score: <span id="stat-score">0%</span></div>
+    </div>
+    <div id="suggestion-box">Preparing...</div>
+    <div id="chat-window"></div>
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Antwoord..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMessage()">
+        <button class="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<div class="summary-box" id="summary">
+    <div id="summary-content"></div>
+    <div id="review-area"></div>
+    <button onclick="location.reload()" style="margin-top:30px; width: 100%; padding: 15px; border-radius: 10px; background: #333; color: white; border: none;">Restart Session</button>
+</div>
+
+<script>
+    let masterList = [];
+    let remainingWords = [];
+    let currentWord = null;
+    let stats = { correct: 0, wrong: 0, attempted: 0 };
+    let mistakes = [];
+
+    async function handleFile() {
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0];
+        if (!file) return alert("Select a file!");
+
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data);
+        const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+
+        masterList = jsonData.slice(1).filter(row => row[1] && row[2]).map(row => ({
+            english: String(row[1]).trim(),
+            dutch: String(row[2]).trim()
+        }));
+
+        if (masterList.length > 0) {
+            remainingWords = [...masterList];
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('chat-ui').style.display = 'flex';
+            updateStats();
+            botAsk();
+        }
+    }
+
+    function speak(text) {
+        // Cancel any current speech so it doesn't overlap
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance();
+        msg.text = text;
+        msg.lang = 'nl-NL';
+        msg.rate = 0.9; // Slightly slower for better learning
+        window.speechSynthesis.speak(msg);
+    }
+
+    function updateStats() {
+        const total = masterList.length;
+        const score = stats.attempted === 0 ? 0 : Math.round((stats.correct / stats.attempted) * 100);
+        document.getElementById('stat-correct').innerText = stats.correct;
+        document.getElementById('stat-wrong').innerText = stats.wrong;
+        document.getElementById('stat-progress').innerText = `${stats.attempted} / ${total}`;
+        document.getElementById('stat-score').innerText = `${score}%`;
+        document.getElementById('progress-fill').style.width = `${(stats.attempted / total) * 100}%`;
+    }
+
+    function addMessage(text, sender, wordToSpeak = null) {
+        const win = document.getElementById('chat-window');
+        const div = document.createElement('div');
+        div.className = `message ${sender}`;
+        div.innerText = text;
+        
+        if (wordToSpeak) {
+            const btn = document.createElement('span');
+            btn.className = 'speaker-btn';
+            btn.innerHTML = ' 🔊';
+            btn.onclick = () => speak(wordToSpeak);
+            div.appendChild(btn);
+            
+            // AUTO SPEAK logic
+            speak(wordToSpeak);
+        }
+
+        win.appendChild(div);
+        win.scrollTop = win.scrollHeight;
+    }
+
+    function botAsk() {
+        if (remainingWords.length === 0) {
+            showSummary();
+            return;
+        }
+        const index = Math.floor(Math.random() * remainingWords.length);
+        currentWord = remainingWords[index];
+        remainingWords.splice(index, 1);
+
+        addMessage(`How do you say "${currentWord.english}"?`, 'bot');
+        document.getElementById('suggestion-box').innerText = `Hint: Starts with "${currentWord.dutch[0]}..."`;
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('user-input');
+        const val = input.value.trim();
+        if(!val || !currentWord) return;
+
+        addMessage(val, 'user');
+        input.value = '';
+        stats.attempted++;
+
+        setTimeout(() => {
+            const isCorrect = val.toLowerCase() === currentWord.dutch.toLowerCase();
+            if (isCorrect) {
+                addMessage("✅ Correct!", 'bot', currentWord.dutch);
+                stats.correct++;
+            } else {
+                addMessage(`❌ Incorrect. It is "${currentWord.dutch}"`, 'bot', currentWord.dutch);
+                stats.wrong++;
+                mistakes.push({ q: currentWord.english, a: currentWord.dutch, user: val });
+            }
+            updateStats();
+            setTimeout(botAsk, 1500); // Wait a bit longer so the audio finishes
+        }, 500);
+    }
+
+    function showSummary() {
+        document.getElementById('chat-ui').style.display = 'none';
+        const summary = document.getElementById('summary');
+        const finalScore = Math.round((stats.correct / stats.attempted) * 100);
+        summary.style.display = 'block';
+
+        let color = finalScore >= 90 ? "var(--success)" : (finalScore < 50 ? "var(--danger)" : "var(--dutch-blue)");
+        
+        document.getElementById('summary-content').innerHTML = `
+            <h2 style="color:${color}">${finalScore >= 90 ? "Perfect! 🎉" : (finalScore < 50 ? "Study Harder ⚠️" : "Good Work 👍")}</h2>
+            <div style="font-size:3rem; font-weight:bold; color:${color}">${finalScore}%</div>
+            <p>Score: ${stats.correct} / ${stats.attempted}</p>
+        `;
+
+        document.getElementById('review-area').innerHTML = mistakes.length > 0 ? `
+            <table class="review-list">
+                <thead><tr><th>English</th><th>Dutch</th><th>You</th></tr></thead>
+                <tbody>${mistakes.map(m => `<tr><td>${m.q}</td><td style="color:green;font-weight:bold">${m.a} <span onclick="speak('${m.a}')" style="cursor:pointer">🔊</span></td><td style="color:red;text-decoration:line-through">${m.user}</td></tr>`).join('')}</tbody>
+            </table>` : '<p style="color:green">Zero mistakes!</p>';
+    }
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+            document.body.style.height = window.visualViewport.height + 'px';
+        });
+    }
+</script>
+</body>
+</html>
