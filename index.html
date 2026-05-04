@@ -6,151 +6,79 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/197/197441.png">
-    <title>Dutch Pro Trainer</title>
+    <title>Dutch Mastery Loop</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <style>
-        :root { --orange: #ff4f00; --blue: #21468b; --bg: #f0f2f5; }
-        
-        /* THE FIX: Prevent iOS from scrolling the body at all */
-        html, body { 
-            position: fixed; 
-            overflow: hidden; 
-            width: 100%; 
-            height: 100%; 
-            margin: 0; 
-            padding: 0;
-            background-color: var(--orange); /* Prevents white flash on keyboard pop */
-        }
-
-        #app-wrapper {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%; /* Will be controlled by JS */
-            background: white;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        /* Fixed Header Section */
-        .header-section {
-            flex-shrink: 0;
-            padding-top: env(safe-area-inset-top);
-            background: var(--orange);
-            color: white;
-            z-index: 10;
-        }
-        .chat-header { padding: 10px; text-align: center; font-weight: bold; }
+        :root { --orange: #ff4f00; --blue: #21468b; --bg: #f0f2f5; --green: #28a745; }
+        html, body { position: fixed; overflow: hidden; width: 100%; height: 100%; margin: 0; padding: 0; background-color: var(--orange); }
+        #app-wrapper { display: flex; flex-direction: column; width: 100%; height: 100%; background: white; position: absolute; top: 0; left: 0; }
+        .header-section { flex-shrink: 0; padding-top: env(safe-area-inset-top); background: var(--orange); color: white; z-index: 10; }
+        .chat-header { padding: 10px; text-align: center; font-weight: bold; font-size: 18px; }
         .stats-bar { background: #222; display: grid; grid-template-columns: 1fr 1fr; font-size: 11px; padding: 5px; }
-
-        /* Scrollable Chat Area */
-        #chat-window {
-            flex-grow: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            background: #f9f9f9;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        /* Input Area: Forced to stay above keyboard */
-        .input-area {
-            flex-shrink: 0;
-            background: white;
-            border-top: 1px solid #ddd;
-            padding: 10px;
-            padding-bottom: max(10px, env(safe-area-inset-bottom));
-            display: flex;
-            gap: 8px;
-        }
-
-        input[type="text"] {
-            flex: 1;
-            padding: 12px;
-            border-radius: 20px;
-            border: 1px solid #ccc;
-            font-size: 16px; /* Prevents auto-zoom on focus */
-            outline: none;
-        }
-
-        .message { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 16px; line-height: 1.4; }
-        .bot { align-self: flex-start; background: #e5e5ea; color: black; }
-        .user { align-self: flex-end; background: var(--blue); color: white; }
-
-        /* Summary Overlay */
-        .summary-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: white; z-index: 100; display: none;
-            flex-direction: column; padding: 40px 20px; overflow-y: auto;
-        }
-        
-        .wrong-word-row { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .wrong-user { color: #dc3545; text-decoration: line-through; font-size: 13px; }
-        .correct-dutch { color: #28a745; font-weight: bold; }
+        #chat-window { flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #f9f9f9; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .input-area { flex-shrink: 0; background: white; border-top: 1px solid #ddd; padding: 10px; padding-bottom: max(10px, env(safe-area-inset-bottom)); display: flex; gap: 8px; }
+        input[type="text"] { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #ccc; font-size: 16px; outline: none; }
+        .message { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 16px; line-height: 1.4; position: relative; }
+        .bot { align-self: flex-start; background: #e5e5ea; color: black; border-bottom-left-radius: 2px; }
+        .user { align-self: flex-end; background: var(--blue); color: white; border-bottom-right-radius: 2px; }
+        .system-alert { align-self: center; background: #333; color: white; font-size: 12px; padding: 5px 15px; border-radius: 20px; margin: 10px 0; }
+        .summary-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: white; z-index: 100; display: none; flex-direction: column; padding: 40px 20px; align-items: center; justify-content: center; text-align: center; }
     </style>
 </head>
 <body>
 
 <div id="app-wrapper">
-    <div class="header-section" id="header">
-        <div class="chat-header">DUTCH PRO</div>
+    <div class="header-section">
+        <div class="chat-header">DUTCH MASTERY LOOP</div>
         <div class="stats-bar">
-            <div style="padding-left:10px">Correct: <span id="stat-correct">0</span></div>
-            <div style="text-align:right; padding-right:10px">Progress: <span id="stat-progress">0/0</span></div>
+            <div style="padding-left:10px">Round: <span id="stat-round">1</span></div>
+            <div style="text-align:right; padding-right:10px">Mistakes to Clear: <span id="stat-mistakes">0</span></div>
         </div>
-        <div id="hint-box" style="background:#fff9c4; color:#333; padding:5px; text-align:center; font-size:12px;">Upload a file to start</div>
+        <div id="hint-box" style="background:#fff9c4; color:#333; padding:5px; text-align:center; font-size:12px;">Waiting for Excel file...</div>
     </div>
 
     <div id="chat-window">
-        <!-- Messages appear here -->
-        <div id="setup-msg" class="message bot">Welcome! Please select your Dutch Excel file to begin your session.</div>
+        <div class="message bot">Upload your file. I will loop your mistakes until you get them all right!</div>
         <input type="file" id="file-input" accept=".xlsx, .csv" style="margin-top:10px">
-        <button onclick="handleFile()" style="margin-top:10px; padding:12px; background:var(--orange); color:white; border:none; border-radius:10px;">Load & Start</button>
+        <button id="start-btn" onclick="handleFile()" style="margin-top:10px; padding:12px; background:var(--orange); color:white; border:none; border-radius:10px; font-weight:bold;">Start Session</button>
     </div>
 
-    <div class="input-area" id="input-bar">
+    <div class="input-area">
         <input type="text" id="user-input" placeholder="Antwoord..." autocomplete="off">
-        <button onclick="sendMessage()" style="background:var(--orange); border:none; color:white; padding:0 15px; border-radius:15px; font-weight:bold;">Send</button>
+        <button onclick="sendMessage()" style="background:var(--orange); border:none; color:white; padding:0 20px; border-radius:20px; font-weight:bold;">Send</button>
     </div>
 </div>
 
 <div id="summary-page" class="summary-overlay">
-    <h1 style="text-align:center">Session Summary</h1>
-    <div id="score-display" style="text-align:center; font-size:40px; font-weight:bold; margin-bottom:20px;"></div>
-    <div id="mistakes-list"></div>
-    <button onclick="location.reload()" style="margin-top:30px; padding:15px; background:#333; color:white; border:none; border-radius:10px;">Restart Practice</button>
+    <div style="font-size: 80px;">🏆</div>
+    <h1>100% MASTERY</h1>
+    <p>Congratulations! You have cleared all words in this session.</p>
+    <button onclick="location.reload()" style="margin-top:30px; padding:15px 40px; background:var(--orange); color:white; border:none; border-radius:10px; font-weight:bold;">Load New File</button>
 </div>
 
 <script>
-    let masterList = [];
-    let remainingWords = [];
+    let currentPool = [];    // Words for the current round
+    let nextMistakes = [];   // Words missed in current round
+    let roundCount = 1;
     let currentWord = null;
-    let stats = { correct: 0, wrong: 0, attempted: 0 };
-    let mistakes = [];
 
-    // --- KEYBOARD FIX FOR iPHONE 14 PRO MAX ---
+    // iOS Keyboard Fix
     const resizeApp = () => {
-        const visualHeight = window.visualViewport.height;
-        document.getElementById('app-wrapper').style.height = visualHeight + 'px';
-        window.scrollTo(0, 0); // Force scroll to top to prevent iOS "panning"
+        document.getElementById('app-wrapper').style.height = window.visualViewport.height + 'px';
+        window.scrollTo(0, 0);
         const chat = document.getElementById('chat-window');
         chat.scrollTop = chat.scrollHeight;
     };
-
     if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', resizeApp);
         window.visualViewport.addEventListener('scroll', resizeApp);
     }
 
-    // Audio function
     function speak(text) {
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = 'nl-NL';
-        msg.rate = 0.85;
+        msg.rate = 0.9;
         window.speechSynthesis.speak(msg);
     }
 
@@ -161,23 +89,43 @@
         const workbook = XLSX.read(data);
         const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
         
-        masterList = jsonData.slice(1).filter(r => r[1] && r[2]).map(r => ({
+        currentPool = jsonData.slice(1).filter(r => r[1] && r[2]).map(r => ({
             en: String(r[1]).trim(), nl: String(r[2]).trim()
         }));
 
-        if (masterList.length > 0) {
-            remainingWords = [...masterList];
-            document.getElementById('setup-msg').style.display = 'none';
-            fileInput.style.display = 'none';
-            botAsk();
+        if (currentPool.length > 0) {
+            document.getElementById('file-input').style.display = 'none';
+            document.getElementById('start-btn').style.display = 'none';
+            startRound();
         }
     }
 
+    function startRound() {
+        if (roundCount > 1) {
+            addSystemMsg(`Round ${roundCount}: Retrying ${currentPool.length} words...`);
+        }
+        document.getElementById('stat-round').innerText = roundCount;
+        document.getElementById('stat-mistakes').innerText = currentPool.length;
+        botAsk();
+    }
+
+    function addSystemMsg(text) {
+        const win = document.getElementById('chat-window');
+        const div = document.createElement('div');
+        div.className = 'system-alert';
+        div.innerText = text;
+        win.appendChild(div);
+    }
+
     function botAsk() {
-        if (remainingWords.length === 0) { showSummary(); return; }
-        const idx = Math.floor(Math.random() * remainingWords.length);
-        currentWord = remainingWords[idx];
-        remainingWords.splice(idx, 1);
+        if (currentPool.length === 0) {
+            checkRoundEnd();
+            return;
+        }
+
+        const idx = Math.floor(Math.random() * currentPool.length);
+        currentWord = currentPool[idx];
+        currentPool.splice(idx, 1);
 
         const win = document.getElementById('chat-window');
         const div = document.createElement('div');
@@ -185,8 +133,7 @@
         div.innerText = `How do you say: "${currentWord.en}"?`;
         win.appendChild(div);
         
-        document.getElementById('hint-box').innerText = `Hint: Starts with "${currentWord.nl[0]}..."`;
-        document.getElementById('stat-progress').innerText = `${stats.attempted} / ${masterList.length}`;
+        document.getElementById('hint-box').innerText = `Hint: ${currentWord.nl[0]}...`;
         win.scrollTop = win.scrollHeight;
     }
 
@@ -202,51 +149,39 @@
         win.appendChild(userDiv);
         
         input.value = '';
-        stats.attempted++;
-
         const isCorrect = val.toLowerCase() === currentWord.nl.toLowerCase();
         
         setTimeout(() => {
             const botDiv = document.createElement('div');
             botDiv.className = 'message bot';
+            
             if (isCorrect) {
-                botDiv.innerText = "✅ Correct!";
-                stats.correct++;
+                botDiv.innerText = "✅ Perfect!";
             } else {
-                botDiv.innerHTML = `❌ Wrong. It is: <b>${currentWord.nl}</b>`;
-                stats.wrong++;
-                mistakes.push({ en: currentWord.en, nl: currentWord.nl, user: val });
+                botDiv.innerHTML = `❌ Wrong. It's: <b>${currentWord.nl}</b>`;
+                nextMistakes.push(currentWord); // Save for next round
             }
+            
             win.appendChild(botDiv);
             speak(currentWord.nl);
-            document.getElementById('stat-correct').innerText = stats.correct;
+            document.getElementById('stat-mistakes').innerText = (currentPool.length + nextMistakes.length);
             win.scrollTop = win.scrollHeight;
             setTimeout(botAsk, 1200);
         }, 400);
     }
 
-    function showSummary() {
-        const overlay = document.getElementById('summary-page');
-        overlay.style.display = 'flex';
-        const percent = Math.round((stats.correct / stats.attempted) * 100);
-        document.getElementById('score-display').innerText = percent + "%";
-        
-        let html = "<h3>Words to Review:</h3>";
-        mistakes.forEach(m => {
-            html += `
-                <div class="wrong-word-row">
-                    <div>
-                        <div style="font-size:14px; font-weight:bold;">${m.en}</div>
-                        <div class="wrong-user">${m.user}</div>
-                    </div>
-                    <div class="correct-dutch" onclick="speak('${m.nl}')">${m.nl} 🔊</div>
-                </div>
-            `;
-        });
-        document.getElementById('mistakes-list').innerHTML = html || "Perfect score! No mistakes.";
+    function checkRoundEnd() {
+        if (nextMistakes.length === 0) {
+            document.getElementById('summary-page').style.display = 'flex';
+        } else {
+            // Start next loop with only the mistakes
+            currentPool = [...nextMistakes];
+            nextMistakes = [];
+            roundCount++;
+            setTimeout(startRound, 1000);
+        }
     }
 
-    // Handle the Enter key
     document.getElementById('user-input').addEventListener('keypress', (e) => {
         if(e.key === 'Enter') sendMessage();
     });
