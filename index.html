@@ -14,17 +14,33 @@
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        /* CRITICAL: Prevents iOS from scrolling the whole page */
+        /* HIDE ALL SCROLLBARS AND LOCK BODY */
         html, body { 
             width: 100%; height: 100%; margin: 0; padding: 0; 
             font-family: -apple-system, system-ui, sans-serif; 
-            background-color: var(--bg); overflow: hidden; 
-            position: fixed; touch-action: none; 
+            background-color: var(--bg); 
+            overflow: hidden !important; /* Removes right side scroll bar */
+            position: fixed; 
+            touch-action: none; 
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        #chat-window::-webkit-scrollbar, 
+        #chapter-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        #chat-window, #chapter-list {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
         
         #app-wrapper {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            display: flex; flex-direction: column; background: white;
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; flex-direction: column; 
+            background: white;
             padding-top: env(safe-area-inset-top);
         }
 
@@ -34,7 +50,6 @@
         }
         .active-screen { display: flex; }
 
-        /* UI ELEMENTS FROM IMAGE_2.PNG */
         .nav-header { width: 100%; height: 50px; display: flex; align-items: center; flex-shrink: 0; }
         .back-btn { 
             background: var(--blue-light); color: var(--blue); border: none; 
@@ -56,18 +71,20 @@
         .prog-bit { flex: 1; height: 100%; background: #eee; border-radius: 10px; }
         .prog-bit.active { background: var(--orange); }
 
-        /* CHAT WINDOW */
         #chat-window { 
-            flex: 1; overflow-y: auto; display: flex; flex-direction: column; 
-            gap: 12px; padding: 10px 0; touch-action: pan-y;
+            flex: 1; 
+            overflow-y: scroll; /* Changed to scroll but hidden via CSS above */
+            display: flex; flex-direction: column; 
+            gap: 12px; padding: 10px 0; 
+            touch-action: pan-y;
             -webkit-overflow-scrolling: touch;
         }
+        
         .msg { padding: 10px 16px; border-radius: 18px; max-width: 80%; font-size: 16px; }
         .bot { align-self: flex-start; background: var(--gray-light); }
         .user { align-self: flex-end; background: var(--blue); color: white; }
         .err-msg { align-self: flex-start; background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
 
-        /* INPUT AREA PINNED TO KEYBOARD */
         .chat-input-area { 
             width: 100%; background: white; border-top: 1px solid #eee;
             padding: 10px 0; display: flex; gap: 10px; align-items: center; flex-shrink: 0;
@@ -82,12 +99,13 @@
             width: 40px; height: 40px; border-radius: 50%; font-size: 16px;
         }
 
-        /* CHAPTERS GRID */
-        #chapter-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; overflow-y: auto; touch-action: pan-y; }
+        #chapter-list { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; 
+            overflow-y: scroll; touch-action: pan-y; 
+        }
         .chap-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 2px solid #eee; border-radius: 15px; font-weight: bold; }
         .chap-box.done { background: var(--green); color: white; border-color: var(--green); }
         .chap-box.error { background: var(--red); color: white; border-color: var(--red); }
-        .chap-box.pending { border-color: var(--orange); color: var(--orange); }
 
         .btn { width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; border: 1px solid #eee; font-size: 16px; }
         .primary { background: var(--blue); color: white; border: none; }
@@ -97,7 +115,6 @@
 <body>
 
 <div id="app-wrapper">
-    <!-- SETUP -->
     <div id="screen-setup" class="screen active-screen" style="justify-content: center; align-items: center;">
         <h1 style="color:var(--blue)">🇳🇱 Dutch Mastery</h1>
         <input type="file" id="file-input" accept=".xlsx, .csv" style="margin-bottom: 20px;">
@@ -111,14 +128,12 @@
         </div>
     </div>
 
-    <!-- CHAPTERS -->
     <div id="screen-chapters" class="screen">
         <div class="nav-header"><button class="back-btn" onclick="showScreen('screen-setup')">⇠ Menu</button></div>
         <h2>Chapters</h2>
         <div id="chapter-list"></div>
     </div>
 
-    <!-- CHAT -->
     <div id="screen-chat" class="screen">
         <div class="nav-header"><button class="back-btn" onclick="goToChapters()">⇠ Back</button></div>
         <div class="progress-container" id="chat-progress-ui"></div>
@@ -129,7 +144,6 @@
         </div>
     </div>
 
-    <!-- QUIZ -->
     <div id="screen-quiz" class="screen">
         <div class="nav-header"><button class="back-btn" onclick="goToChapters()">⇠ Back</button></div>
         <div class="progress-container" id="quiz-progress-ui"></div>
@@ -144,23 +158,31 @@
     let masterList = [], currentPool = [], wrongAnswers = [], chatStatus = {}, quizStatus = {}; 
     let appMode = 'chat', currentIndex = 0, currentWord = null, isLocked = false, activeChapterId = -1;
 
-    // KEYBOARD FIX: Locks the screen height to the visible viewport
+    // KEYBOARD FIX: Removes scrolling behavior by forcing wrapper to visual viewport
     const vp = window.visualViewport;
     function syncViewport() {
         const wrapper = document.getElementById('app-wrapper');
-        // Subtract the offset to prevent the address bar from pushing content
+        // Setting height to visualViewport.height locks the UI to the space above the keyboard
         wrapper.style.height = `${vp.height}px`;
         wrapper.style.top = `${vp.offsetTop}px`;
         
+        window.scrollTo(0, 0); // Force scroll position to top-left always
+
         if (document.getElementById('screen-chat').classList.contains('active-screen')) {
             const win = document.getElementById('chat-window');
             win.scrollTop = win.scrollHeight;
         }
     }
+
     vp.addEventListener('resize', syncViewport);
     vp.addEventListener('scroll', syncViewport);
 
-    document.getElementById('chat-in').addEventListener('keypress', (e) => { if (e.key === 'Enter') handleChatSubmit(); });
+    // Prevent any default "pull to refresh" or rubber-banding
+    document.addEventListener('touchmove', (e) => {
+        if (!e.target.closest('#chat-window, #chapter-list')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 
     async function loadData() {
         const file = document.getElementById('file-input').files[0];
