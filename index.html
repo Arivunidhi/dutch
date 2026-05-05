@@ -6,241 +6,268 @@
     <title>Dutch Mastery Elite</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <style>
-        :root { --orange: #ff4f00; --blue: #4b63ff; --bg: #ffffff; --green: #2db162; --red: #ea5936; --gray-light: #f0f2f5; --text: #3c3c3c; }
-        html, body { width: 100%; height: 100%; margin: 0; padding: 0; font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text); overflow: hidden; }
+        :root { 
+            --orange: #ff4f00; --blue: #4b63ff; --bg: #ffffff; 
+            --green: #2db162; --red: #ea5936; --gray-light: #f0f2f5; 
+            --text: #3c3c3c; --blue-light: #e8f0fe;
+        }
         
-        .screen { position: absolute; inset: 0; background: white; z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 25px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html, body { 
+            width: 100%; height: 100%; margin: 0; padding: 0; 
+            background-color: var(--bg); overflow: hidden !important; 
+            position: fixed; left: 0; top: 0; touch-action: none; 
+        }
+
+        /* Scrollbar Removal */
+        #chat-window::-webkit-scrollbar, #chapter-list::-webkit-scrollbar { display: none; }
+        #chat-window, #chapter-list { -ms-overflow-style: none; scrollbar-width: none; }
+
+        #app-wrapper {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; flex-direction: column; background: white;
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .screen { flex: 1; width: 100%; display: none; flex-direction: column; padding: 0 20px; overflow: hidden; }
         .active-screen { display: flex; }
 
-        /* Progress Bar Styling */
-        .progress-header { width: 100%; max-width: 800px; display: flex; align-items: center; gap: 10px; margin-bottom: 40px; padding: 0 20px; }
-        .prog-seg-container { flex: 1; display: flex; gap: 6px; }
-        .prog-seg { flex: 1; height: 12px; background: #e5e5e5; border-radius: 10px; overflow: hidden; }
-        .prog-fill { height: 100%; background: #e5e5e5; transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1); }
-        .prog-fill.active { background: var(--orange); }
-        .count-circle { width: 30px; height: 30px; background: var(--orange); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+        .nav-header { width: 100%; height: 50px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .back-btn { background: var(--blue-light); color: var(--blue); border: none; padding: 6px 14px; border-radius: 8px; font-weight: bold; }
 
-        /* Card Design */
-        .quiz-container { width: 90%; max-width: 700px; border: 2px solid #e5e5e5; border-radius: 20px; padding: 40px; position: relative; }
-        .def-label { color: #afafaf; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 5px; margin-bottom: 20px; }
-        .q-word { font-size: 32px; font-weight: 500; margin-bottom: 60px; text-align: left; }
+        .progress-container { width: 100%; display: flex; align-items: center; gap: 8px; margin: 5px 0 15px 0; height: 30px; flex-shrink: 0; }
+        .num-circle { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
+        .num-circle.start { background: var(--orange); color: white; }
+        .num-circle.end { background: #eee; color: #aaa; }
+        .prog-track { flex: 1; height: 6px; background: #eee; border-radius: 10px; display: flex; gap: 2px; }
+        .prog-bit { flex: 1; height: 100%; background: #eee; border-radius: 10px; }
+        .prog-bit.active { background: var(--orange); }
 
-        /* Options Grid */
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .opt-btn { width: 100%; padding: 20px; border: 2px solid #e5e5e5; border-radius: 15px; background: white; font-size: 18px; color: #4b4b4b; cursor: pointer; text-align: left; display: flex; align-items: center; transition: all 0.2s; position: relative; }
-        .opt-btn:hover { background: #f7f7f7; }
-        .opt-num { color: #afafaf; margin-right: 15px; font-size: 14px; border: 1px solid #e5e5e5; padding: 2px 6px; border-radius: 4px; }
-        
-        /* Feedback States */
-        .opt-btn.correct { border-color: var(--green); background: #e8f5e9; color: var(--green); font-weight: bold; }
-        .opt-btn.correct::before { content: '✓'; margin-right: 10px; font-size: 20px; }
-        .opt-btn.wrong { border-color: var(--red); background: #fdf2f0; color: var(--red); font-weight: bold; }
-        .opt-btn.wrong::before { content: '✕'; margin-right: 10px; font-size: 20px; }
+        #chat-window { flex: 1; overflow-y: scroll; display: flex; flex-direction: column; gap: 12px; padding: 10px 0; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+        .msg { padding: 10px 16px; border-radius: 18px; max-width: 80%; font-size: 16px; }
+        .bot { align-self: flex-start; background: var(--gray-light); }
+        .user { align-self: flex-end; background: var(--blue); color: white; }
+        .err-msg { align-self: flex-start; background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
 
-        .footer-text { margin-top: 40px; color: #777; font-size: 14px; }
-        
-        /* Setup UI */
-        .btn { width: 100%; max-width: 300px; padding: 15px; margin: 8px 0; border: 2px solid #eee; border-radius: 12px; background: white; font-weight: bold; cursor: pointer; }
-        .primary-btn { background: var(--blue); color: white; border: none; }
-        #chapter-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
-        .chap-item { padding: 15px; border: 1px solid #ddd; border-radius: 10px; cursor: pointer; }
-        .chap-item.done { background: var(--green); color: white; border-color: var(--green); }
+        .chat-input-area { width: 100%; background: white; border-top: 1px solid #eee; padding: 10px 0; display: flex; gap: 10px; flex-shrink: 0; margin-bottom: env(safe-area-inset-bottom); }
+        .chat-input-area input { flex: 1; padding: 12px 18px; border-radius: 25px; border: 1px solid #ddd; font-size: 16px; outline: none; }
+        .send-btn { background: var(--blue); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; }
+
+        #chapter-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; overflow-y: scroll; touch-action: pan-y; padding-bottom: 20px; }
+        .chap-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 2px solid #eee; border-radius: 15px; font-weight: bold; position: relative; }
+        .chap-box.done { border-color: var(--green); background: #f6ffed; color: var(--green); }
+        .btn { width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; border: 1px solid #eee; font-size: 16px; background: white; margin-bottom: 10px; }
+        .primary { background: var(--blue); color: white; border: none; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="app-wrapper">
     <!-- SETUP SCREEN -->
-    <div id="screen-setup" class="screen active-screen">
-        <h1 style="color:var(--blue)">Dutch Mastery</h1>
-        <input type="file" id="file-input" accept=".xlsx, .csv" style="margin: 20px 0;">
-        <div style="display:flex; gap:10px;">
-            <button class="btn" id="m-chat" onclick="setMode('chat')">Chat Mode</button>
-            <button class="btn" style="border-color:var(--blue)" id="m-quiz" onclick="setMode('quiz')">Quiz Mode</button>
+    <div id="screen-setup" class="screen active-screen" style="justify-content: center;">
+        <h1 style="text-align: center; color: var(--blue);">🇳🇱 Dutch Mastery</h1>
+        <input type="file" id="file-input" accept=".xlsx, .csv" style="margin-bottom: 20px;">
+        <button class="btn primary" onclick="loadData()">Upload File</button>
+        <div id="mode-zone" class="hidden">
+            <h3 style="text-align: center;">Select Learning Mode</h3>
+            <button class="btn" id="m-chat" onclick="setMode('chat')">💬 Chat Practice</button>
+            <button class="btn" id="m-quiz" onclick="setMode('quiz')">🔘 Hard Quiz</button>
         </div>
-        <button class="btn primary-btn" onclick="loadChapters()">Enter Classroom</button>
     </div>
 
     <!-- CHAPTER SCREEN -->
     <div id="screen-chapters" class="screen">
-        <h2>Select a Chapter</h2>
+        <div class="nav-header">
+            <button class="back-btn" onclick="showScreen('screen-setup')">⇠ Main</button>
+            <span id="mode-indicator" style="font-weight: bold; color: var(--orange);"></span>
+        </div>
+        <h2>Chapters</h2>
         <div id="chapter-list"></div>
     </div>
 
-    <!-- PRACTICE SCREEN -->
-    <div id="screen-practice" class="screen">
-        <div class="progress-header">
-            <div class="count-circle" id="count-left">0</div>
-            <div class="prog-seg-container" id="prog-seg-container"></div>
-            <div class="count-circle" style="background:#e5e5e5; color:#777;" id="count-total">0</div>
+    <!-- CHAT SCREEN -->
+    <div id="screen-chat" class="screen">
+        <div class="nav-header"><button class="back-btn" onclick="exitSession()">⇠ Chapters</button></div>
+        <div id="chat-progress-ui" class="progress-container"></div>
+        <div id="chat-window"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-in" placeholder="Translate to Dutch..." autocomplete="off">
+            <button class="send-btn" onclick="handleChatSubmit()">➔</button>
         </div>
-
-        <div class="quiz-container">
-            <div class="def-label">Definition <span style="font-size:18px">🔊</span></div>
-            <div id="q-text" class="q-word">...</div>
-            <div class="options-grid" id="options-grid"></div>
-        </div>
-
-        <div class="footer-text">Click the correct answer to continue</div>
     </div>
 
-    <!-- MASTERY SCREEN -->
-    <div id="screen-mastery" class="screen">
-        <h1 id="mastery-msg">Chapter Finished!</h1>
-        <button class="btn primary-btn" id="retry-btn" onclick="retryMistakes()">Review Mistakes</button>
-        <button class="btn" onclick="showChapters()">Back to Chapters</button>
+    <!-- QUIZ SCREEN -->
+    <div id="screen-quiz" class="screen">
+        <div class="nav-header"><button class="back-btn" onclick="exitSession()">⇠ Chapters</button></div>
+        <div id="quiz-progress-ui" class="progress-container"></div>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+            <h2 id="quiz-q" style="font-size: 28px; text-align: center; margin-bottom: 30px;"></h2>
+            <div id="quiz-options" style="width: 100%; display: grid; gap: 12px;"></div>
+        </div>
     </div>
 </div>
 
 <script>
-    let masterList = [], currentPool = [], wrongAnswers = [], completedChapters = new Set();
-    let appMode = 'quiz', currentIndex = 0, currentWord = null, isLocked = false, activeChapterId = -1;
+    let masterList = [], currentPool = [], appMode = 'chat', currentIndex = 0, currentWord = null;
+    let progressState = { chat: {}, quiz: {} }; // Stores "done" status per chapter index
+
+    const vp = window.visualViewport;
+    function sync() {
+        const wrap = document.getElementById('app-wrapper');
+        wrap.style.height = `${vp.height}px`;
+        wrap.style.top = `${vp.offsetTop}px`;
+        window.scrollTo(0, 0);
+        if(appMode === 'chat') {
+            const win = document.getElementById('chat-window');
+            if(win) win.scrollTop = win.scrollHeight;
+        }
+    }
+    vp.addEventListener('resize', sync);
+    vp.addEventListener('scroll', sync);
+
+    function loadData() {
+        const file = document.getElementById('file-input').files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, {type: 'array'});
+            masterList = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1})
+                .slice(1).filter(r => r[1] && r[2]).map(r => ({en: String(r[1]).trim(), nl: String(r[2]).trim()}));
+            document.getElementById('mode-zone').classList.remove('hidden');
+        };
+        reader.readAsArrayBuffer(file);
+    }
 
     function setMode(m) {
         appMode = m;
-        document.getElementById('m-chat').style.borderColor = m === 'chat' ? 'var(--blue)' : '#eee';
-        document.getElementById('m-quiz').style.borderColor = m === 'quiz' ? 'var(--blue)' : '#eee';
+        document.getElementById('mode-indicator').innerText = m.toUpperCase();
+        renderChapters();
+        showScreen('screen-chapters');
     }
 
-    async function loadChapters() {
-        const file = document.getElementById('file-input').files[0];
-        if (!file) return alert("Select a file first.");
-        const data = await file.arrayBuffer();
-        const wb = XLSX.read(data);
-        masterList = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1})
-            .slice(1).filter(r => r[1] && r[2]).map(r => ({en: String(r[1]).trim(), nl: String(r[2]).trim()}));
-        showChapters();
-    }
-
-    function showChapters() {
+    function renderChapters() {
         const container = document.getElementById('chapter-list');
         container.innerHTML = '';
         const total = Math.ceil(masterList.length / 50);
         for(let i=0; i<total; i++) {
             const div = document.createElement('div');
-            div.className = 'chap-item' + (completedChapters.has(i) ? ' done' : '');
+            div.className = `chap-box ${progressState[appMode][i] ? 'done' : ''}`;
             div.innerText = i + 1;
-            div.onclick = () => startSession(masterList.slice(i*50, (i+1)*50), i);
+            div.onclick = () => startChapter(i);
             container.appendChild(div);
         }
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-        document.getElementById('screen-chapters').classList.add('active-screen');
     }
 
-    function startSession(words, id) {
-        currentPool = [...words];
-        wrongAnswers = [];
+    let activeChapterIdx = 0;
+    function startChapter(idx) {
+        activeChapterIdx = idx;
+        currentPool = masterList.slice(idx * 50, (idx + 1) * 50);
         currentIndex = 0;
-        activeChapterId = id;
-        setupProgress();
-        nextQuestion();
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-        document.getElementById('screen-practice').classList.add('active-screen');
-    }
-
-    function setupProgress() {
-        const container = document.getElementById('prog-seg-container');
-        container.innerHTML = '';
-        document.getElementById('count-total').innerText = currentPool.length;
-        for(let i=0; i<currentPool.length; i++) {
-            const seg = document.createElement('div');
-            seg.className = 'prog-seg';
-            seg.innerHTML = `<div class="prog-fill" id="fill-${i}"></div>`;
-            container.appendChild(seg);
+        if(appMode === 'chat') {
+            document.getElementById('chat-window').innerHTML = '';
+            showScreen('screen-chat');
+            nextChat();
+        } else {
+            showScreen('screen-quiz');
+            nextQuiz();
         }
     }
 
-    function nextQuestion() {
-        if (currentIndex >= currentPool.length) return endSession();
-        
-        isLocked = false;
+    function generateDistractors(correct) {
+        let opts = new Set();
+        const vowels = ['a','e','i','o','u','aa','ee','oo','uu'];
+        while(opts.size < 3) {
+            let s = correct;
+            let r = Math.random();
+            if(r < 0.4) s = correct.replace(/[aeiou]/g, () => vowels[Math.floor(Math.random()*vowels.length)]);
+            else if(r < 0.7) s = correct.length > 3 ? correct.slice(0,-1) : correct + correct.slice(-1);
+            else {
+                let a = correct.split('');
+                let i = Math.floor(Math.random()*(a.length-1));
+                [a[i], a[i+1]] = [a[i+1], a[i]];
+                s = a.join('');
+            }
+            if(s.toLowerCase() !== correct.toLowerCase()) opts.add(s);
+        }
+        return Array.from(opts);
+    }
+
+    function nextQuiz() {
+        if(currentIndex >= currentPool.length) return finishChapter();
         currentWord = currentPool[currentIndex];
-        document.getElementById('q-text').innerText = currentWord.en;
-        document.getElementById('count-left').innerText = currentIndex + 1;
-
-        // Update progress bar
-        for(let i=0; i<=currentIndex; i++) {
-            const f = document.getElementById(`fill-${i}`);
-            if(f) f.style.width = '100%';
-            if(f) f.classList.add('active');
-        }
-
-        const grid = document.getElementById('options-grid');
+        renderProgress('quiz-progress-ui');
+        document.getElementById('quiz-q').innerText = currentWord.en;
+        const grid = document.getElementById('quiz-options');
         grid.innerHTML = '';
-
-        let opts = [currentWord.nl];
-        while(opts.length < 4) {
-            let dist = mutate(currentWord.nl);
-            if(!opts.includes(dist)) opts.push(dist);
-        }
-        opts.sort(() => Math.random() - 0.5);
-
-        opts.forEach((o, i) => {
-            const b = document.createElement('button');
-            b.className = 'opt-btn';
-            b.innerHTML = `<span class="opt-num">${i+1}</span> ${o}`;
-            b.onclick = () => checkAnswer(b, o);
+        const opts = [currentWord.nl, ...generateDistractors(currentWord.nl)].sort(() => Math.random()-0.5);
+        opts.forEach(o => {
+            const b = document.createElement('button'); b.className = 'btn'; b.innerText = o;
+            b.onclick = () => {
+                b.style.background = o === currentWord.nl ? 'var(--green)' : 'var(--red)';
+                b.style.color = 'white';
+                setTimeout(() => { currentIndex++; nextQuiz(); }, 600);
+            };
             grid.appendChild(b);
         });
     }
 
-    function checkAnswer(btn, choice) {
-        if(isLocked) return;
-        isLocked = true;
-        const isCorrect = choice === currentWord.nl;
-        
-        speak(currentWord.nl);
+    function nextChat() {
+        if(currentIndex >= currentPool.length) return finishChapter();
+        currentWord = currentPool[currentIndex];
+        renderProgress('chat-progress-ui');
+        const win = document.getElementById('chat-window');
+        const m = document.createElement('div'); m.className = 'msg bot';
+        m.innerText = `How do you say: "${currentWord.en}"?`;
+        win.appendChild(m); win.scrollTop = win.scrollHeight;
+    }
 
-        if(isCorrect) {
-            btn.classList.add('correct');
+    function handleChatSubmit() {
+        const inp = document.getElementById('chat-in');
+        const val = inp.value.trim();
+        if(!val) return;
+        const win = document.getElementById('chat-window');
+        const u = document.createElement('div'); u.className = 'msg user'; u.innerText = val;
+        win.appendChild(u);
+        const b = document.createElement('div');
+        if(val.toLowerCase() === currentWord.nl.toLowerCase()) {
+            b.className = 'msg bot'; b.innerText = "✅ Perfect!";
         } else {
-            btn.classList.add('wrong');
-            wrongAnswers.push(currentWord);
-            Array.from(document.getElementById('options-grid').children).forEach(cb => {
-                if(cb.innerText.includes(currentWord.nl)) cb.classList.add('correct');
-            });
+            b.className = 'msg bot err-msg'; b.innerHTML = `❌ Incorrect. Correct: <b>${currentWord.nl}</b>`;
         }
-
-        setTimeout(() => {
-            currentIndex++;
-            nextQuestion();
-        }, 1500);
+        win.appendChild(b);
+        win.scrollTop = win.scrollHeight;
+        inp.value = '';
+        setTimeout(() => { currentIndex++; nextChat(); }, 1200);
     }
 
-    function mutate(word) {
-        let arr = word.split('');
-        let idx = Math.floor(Math.random() * arr.length);
-        let type = Math.floor(Math.random() * 2);
-        if(type === 0) arr[idx] = 'aeiou'.charAt(Math.floor(Math.random()*5));
-        else arr.splice(idx, 0, arr[idx]);
-        let res = arr.join('');
-        return res === word ? mutate(word) : res;
+    function finishChapter() {
+        progressState[appMode][activeChapterIdx] = true;
+        exitSession();
     }
 
-    function speak(t) {
-        window.speechSynthesis.cancel();
-        const m = new SpeechSynthesisUtterance(t); m.lang = 'nl-NL';
-        window.speechSynthesis.speak(m);
+    function exitSession() {
+        renderChapters();
+        showScreen('screen-chapters');
     }
 
-    function endSession() {
+    function renderProgress(id) {
+        const ui = document.getElementById(id);
+        ui.innerHTML = `<div class="num-circle start">${currentIndex+1}</div><div class="prog-track" id="bar-${id}"></div><div class="num-circle end">${currentPool.length}</div>`;
+        const bar = document.getElementById(`bar-${id}`);
+        for(let i=0; i<currentPool.length; i++) {
+            const bit = document.createElement('div');
+            bit.className = `prog-bit ${i <= currentIndex ? 'active' : ''}`;
+            bar.appendChild(bit);
+        }
+    }
+
+    function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-        document.getElementById('screen-mastery').classList.add('active-screen');
-        const msg = document.getElementById('mastery-msg');
-        const retry = document.getElementById('retry-btn');
-
-        if(wrongAnswers.length === 0) {
-            msg.innerText = "100% Mastery Achieved!";
-            completedChapters.add(activeChapterId);
-            retry.style.display = 'none';
-        } else {
-            msg.innerText = `Keep practicing! You missed ${wrongAnswers.length} words.`;
-            retry.style.display = 'block';
-        }
-    }
-
-    function retryMistakes() {
-        startSession(wrongAnswers, activeChapterId);
+        document.getElementById(id).classList.add('active-screen');
+        sync();
     }
 </script>
 </body>
