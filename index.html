@@ -4,304 +4,757 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
     <title>Dutch Mastery Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <style>
-        :root { 
-            --orange: #ff4f00; --blue: #4b63ff; --bg: #ffffff; 
-            --green: #2db162; --red: #ea5936; --gray-light: #f0f2f5; 
-            --text: #3c3c3c; --blue-light: #e8f0fe;
+        :root {
+            --orange: #f57c00;
+            --blue: #1565c0;
+            --blue-light: #e3f2fd;
+            --green: #2e7d32;
+            --green-light: #e8f5e9;
+            --red: #c62828;
+            --red-light: #ffebee;
+            --bg: #f8f9fb;
+            --card: #ffffff;
+            --text: #1a1a2e;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --radius: 14px;
         }
-        
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        html, body { 
-            width: 100%; height: 100%; margin: 0; padding: 0; 
-            background-color: var(--bg); overflow: hidden !important; 
-            position: fixed; left: 0; top: 0; touch-action: none; 
-            font-family: -apple-system, system-ui, sans-serif;
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%; height: 100%;
+            background: var(--bg);
+            font-family: 'Nunito', sans-serif;
+            color: var(--text);
+            overflow: hidden;
+            position: fixed;
         }
 
         #app-wrapper {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            display: flex; flex-direction: column; background: white;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; flex-direction: column;
             padding-top: env(safe-area-inset-top);
         }
 
-        .screen { flex: 1; width: 100%; display: none; flex-direction: column; padding: 0 20px; overflow: hidden; }
+        /* ── SCREENS ── */
+        .screen { flex: 1; width: 100%; display: none; flex-direction: column; overflow: hidden; }
         .active-screen { display: flex; }
 
-        /* Navigation Header */
-        .nav-header { width: 100%; height: 60px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; border-bottom: 1px solid #eee; margin-bottom: 10px;}
-        .back-btn { background: var(--blue-light); color: var(--blue); border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 14px;}
+        /* ── NAV ── */
+        .nav-header {
+            width: 100%; height: 58px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-title { font-weight: 900; font-size: 1.1rem; letter-spacing: -0.3px; }
+        .back-btn {
+            background: var(--blue-light); color: var(--blue);
+            border: none; padding: 8px 14px; border-radius: 20px;
+            font-weight: 700; font-size: 0.85rem; cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+        }
+        .back-btn:active { opacity: 0.7; }
 
-        /* Progress Bar */
-        .progress-container { width: 100%; display: flex; align-items: center; gap: 8px; margin: 10px 0; height: 30px; flex-shrink: 0; }
-        .num-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
-        .num-circle.start { background: var(--orange); color: white; }
-        .num-circle.end { background: #eee; color: #aaa; }
-        .prog-track { flex: 1; height: 8px; background: #eee; border-radius: 10px; display: flex; gap: 2px; }
-        .prog-bit { flex: 1; height: 100%; background: #eee; border-radius: 4px; }
-        .prog-bit.active { background: var(--orange); }
+        /* ── SETUP SCREEN ── */
+        #screen-setup {
+            justify-content: center; align-items: center;
+            background: linear-gradient(160deg, #e3f2fd 0%, #f8f9fb 60%);
+            padding: 30px 24px;
+        }
 
-        /* Chat System */
-        #chat-window { flex: 1; overflow-y: scroll; display: flex; flex-direction: column; gap: 12px; padding: 15px 0; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
-        .msg { padding: 12px 16px; border-radius: 18px; max-width: 85%; font-size: 16px; line-height: 1.4; }
-        .bot { align-self: flex-start; background: var(--gray-light); color: var(--text); border-bottom-left-radius: 4px; }
+        .setup-logo {
+            font-size: 3.5rem; margin-bottom: 8px; animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+        .setup-title {
+            font-size: 2rem; font-weight: 900; color: var(--blue);
+            letter-spacing: -1px; margin-bottom: 6px;
+        }
+        .setup-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 36px; }
+
+        .file-drop-zone {
+            width: 100%; background: var(--card);
+            border: 2px dashed #93c5fd; border-radius: var(--radius);
+            padding: 30px 20px; text-align: center;
+            cursor: pointer; transition: border-color 0.2s, background 0.2s;
+            margin-bottom: 16px;
+        }
+        .file-drop-zone:active { background: var(--blue-light); border-color: var(--blue); }
+        .file-drop-zone input { display: none; }
+        .file-drop-icon { font-size: 2rem; margin-bottom: 8px; }
+        .file-drop-label { font-weight: 700; color: var(--blue); font-size: 1rem; }
+        .file-drop-hint { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+        #file-status {
+            font-size: 0.9rem; font-weight: 700; color: var(--green);
+            min-height: 22px; text-align: center; margin-bottom: 12px;
+        }
+
+        .mode-btn-group { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+
+        .mode-card {
+            width: 100%; padding: 18px 20px;
+            border-radius: var(--radius); border: 2px solid var(--border);
+            background: var(--card); display: flex; align-items: center; gap: 16px;
+            cursor: pointer; transition: all 0.2s; font-family: 'Nunito', sans-serif;
+            box-shadow: var(--shadow);
+        }
+        .mode-card.selected { border-color: var(--blue); background: var(--blue-light); }
+        .mode-card:active { transform: scale(0.98); }
+        .mode-icon { font-size: 1.8rem; }
+        .mode-info { text-align: left; }
+        .mode-name { font-weight: 900; font-size: 1.05rem; color: var(--text); }
+        .mode-desc { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+        .go-btn {
+            width: 100%; margin-top: 16px; padding: 16px;
+            background: var(--blue); color: white;
+            border: none; border-radius: var(--radius);
+            font-size: 1.05rem; font-weight: 900;
+            cursor: pointer; font-family: 'Nunito', sans-serif;
+            box-shadow: 0 4px 16px rgba(21,101,192,0.35);
+            transition: opacity 0.2s, transform 0.15s;
+        }
+        .go-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .go-btn:not(:disabled):active { transform: scale(0.97); }
+
+        /* ── MODE SELECT SCREEN ── */
+        #screen-mode {
+            justify-content: center; align-items: center;
+            padding: 24px;
+            background: linear-gradient(160deg, #e3f2fd 0%, #f8f9fb 60%);
+        }
+        .mode-select-title { font-size: 1.5rem; font-weight: 900; color: var(--blue); margin-bottom: 6px; }
+        .mode-select-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 30px; }
+        .mode-select-cards { width: 100%; display: flex; flex-direction: column; gap: 14px; }
+        .big-mode-card {
+            width: 100%; padding: 22px 20px;
+            border-radius: var(--radius); border: 2px solid var(--border);
+            background: var(--card); display: flex; align-items: center; gap: 18px;
+            cursor: pointer; transition: all 0.2s; font-family: 'Nunito', sans-serif;
+            box-shadow: var(--shadow);
+        }
+        .big-mode-card:active { transform: scale(0.97); }
+        .big-mode-card .m-icon { font-size: 2.2rem; }
+        .big-mode-card .m-name { font-weight: 900; font-size: 1.15rem; }
+        .big-mode-card .m-desc { font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
+        .big-mode-card.chat-card { border-color: #90caf9; }
+        .big-mode-card.quiz-card { border-color: #a5d6a7; }
+        .back-home-btn {
+            margin-top: 20px; width: 100%;
+            padding: 13px; border-radius: var(--radius);
+            border: 1.5px solid var(--border); background: var(--card);
+            font-family: 'Nunito', sans-serif; font-weight: 700;
+            font-size: 0.95rem; color: var(--muted); cursor: pointer;
+        }
+
+        /* ── CHAPTERS SCREEN ── */
+        #screen-chapters { padding: 0; }
+        .chapter-scroll { flex: 1; overflow-y: auto; padding: 14px 16px 24px; }
+        .section-label {
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--muted); margin-bottom: 10px;
+        }
+        #chapter-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+        .chap-box {
+            aspect-ratio: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            border: 2px solid var(--border); border-radius: 12px;
+            font-weight: 900; font-size: 1.1rem;
+            background: var(--card); cursor: pointer;
+            transition: all 0.2s; box-shadow: var(--shadow);
+            position: relative;
+        }
+        .chap-box:active { transform: scale(0.93); }
+        .chap-box .chap-num { font-size: 1.2rem; font-weight: 900; }
+        .chap-box .chap-words { font-size: 0.62rem; font-weight: 600; opacity: 0.7; margin-top: 2px; }
+
+        .status-inprogress { border-color: var(--orange) !important; background: #fff3e0 !important; color: var(--orange) !important; }
+        .status-retry      { border-color: var(--red) !important;    background: var(--red-light) !important;   color: var(--red) !important; }
+        .status-completed  { border-color: var(--green) !important;  background: var(--green-light) !important; color: var(--green) !important; }
+
+        .legend { display: flex; gap: 14px; padding: 10px 16px; flex-shrink: 0; background: var(--card); border-top: 1px solid var(--border); margin-bottom: 0; }
+        .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 700; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .l-orange { background: var(--orange); }
+        .l-red { background: var(--red); }
+        .l-green { background: var(--green); }
+
+        /* ── PROGRESS BAR ── */
+        .progress-bar-wrap { padding: 10px 16px; flex-shrink: 0; background: var(--card); border-bottom: 1px solid var(--border); }
+        .prog-meta { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+        .prog-track { width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+        .prog-fill { height: 100%; background: var(--blue); border-radius: 4px; transition: width 0.3s; }
+        .round-badge {
+            display: inline-block; padding: 2px 10px;
+            background: #fff3e0; color: var(--orange);
+            border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* ── CHAT SCREEN ── */
+        #screen-chat { padding: 0; }
+        #chat-window { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; }
+
+        .msg {
+            padding: 12px 16px; border-radius: 18px;
+            max-width: 85%; font-size: 0.95rem; line-height: 1.5;
+            animation: msgIn 0.2s ease;
+        }
+        @keyframes msgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        .bot { align-self: flex-start; background: var(--card); border: 1px solid var(--border); color: var(--text); border-bottom-left-radius: 4px; }
         .user { align-self: flex-end; background: var(--blue); color: white; border-bottom-right-radius: 4px; }
-        .err-msg { border: 1px solid #ffccc7; background: #fff1f0; color: #cf1322; }
+        .correct-msg { background: var(--green-light); color: var(--green); border: 1px solid #a5d6a7; }
+        .wrong-msg { background: var(--red-light); color: var(--red); border: 1px solid #ef9a9a; }
+        .system-msg { align-self: center; background: #fffde7; color: #f57f17; border: 1px solid #fff176; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 20px; }
 
-        .chat-input-area { width: 100%; background: white; border-top: 1px solid #eee; padding: 12px 0; display: flex; gap: 10px; flex-shrink: 0; margin-bottom: env(safe-area-inset-bottom); }
-        .chat-input-area input { flex: 1; padding: 14px 20px; border-radius: 25px; border: 1px solid #ddd; font-size: 16px; outline: none; }
-        .send-btn { background: var(--blue); color: white; border: none; width: 48px; height: 48px; border-radius: 50%; font-size: 20px; }
+        .chat-input-area {
+            padding: 10px 16px; display: flex; gap: 10px;
+            border-top: 1px solid var(--border); background: var(--card);
+            flex-shrink: 0;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+        }
+        .chat-input-area input {
+            flex: 1; padding: 13px 16px; border-radius: 24px;
+            border: 2px solid var(--border); outline: none;
+            font-size: 1rem; font-family: 'Nunito', sans-serif;
+            background: var(--bg); transition: border-color 0.2s;
+        }
+        .chat-input-area input:focus { border-color: var(--blue); }
+        .send-btn {
+            padding: 13px 18px; background: var(--blue); color: white;
+            border: none; border-radius: 24px; font-size: 1.1rem;
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .send-btn:active { opacity: 0.7; }
 
-        /* Chapter Grid */
-        #chapter-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; overflow-y: scroll; touch-action: pan-y; padding-bottom: 30px; }
-        .chap-box { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid #eee; border-radius: 16px; font-weight: bold; font-size: 18px; }
-        .chap-box.done { border-color: var(--green); background: #f6ffed; color: var(--green); }
-        .chap-box.done::after { content: '✓'; font-size: 12px; margin-top: 4px; }
+        /* ── QUIZ SCREEN ── */
+        #screen-quiz { padding: 0; }
+        .quiz-body { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 16px; overflow: hidden; }
+        .quiz-question-card {
+            width: 100%; background: var(--card);
+            border-radius: var(--radius); padding: 24px 20px;
+            text-align: center; margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        .quiz-label { font-size: 0.78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+        .quiz-q { font-size: 1.9rem; font-weight: 900; color: var(--text); }
+        #quiz-options { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-        .btn { width: 100%; padding: 18px; border-radius: 14px; font-weight: bold; border: 1px solid #eee; font-size: 16px; background: white; transition: all 0.2s; }
-        .primary { background: var(--blue); color: white; border: none; }
-        .mode-btn.active { border: 2px solid var(--blue); background: var(--blue-light); }
-        .hidden { display: none !important; }
+        .quiz-opt {
+            padding: 15px 10px; border-radius: var(--radius);
+            border: 2px solid var(--border); background: var(--card);
+            font-weight: 700; font-size: 0.95rem; cursor: pointer;
+            transition: all 0.15s; font-family: 'Nunito', sans-serif;
+            text-align: center; box-shadow: var(--shadow);
+            word-break: break-word;
+        }
+        .quiz-opt:active { transform: scale(0.96); }
+        .quiz-opt.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
+        .quiz-opt.wrong   { border-color: var(--red);   background: var(--red-light);   color: var(--red); }
+        .quiz-opt:disabled { pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div id="app-wrapper">
-    <!-- SCREEN 1: SETUP -->
-    <div id="screen-setup" class="screen active-screen" style="justify-content: center;">
-        <h1 style="text-align: center; color: var(--blue); margin-bottom: 5px;">Dutch Mastery</h1>
-        <p style="text-align: center; color: #666; margin-bottom: 30px;">Flashcard & Chat Trainer</p>
-        
-        <div id="upload-section">
-            <input type="file" id="file-input" accept=".xlsx, .csv" style="display:none" onchange="loadData()">
-            <button class="btn primary" onclick="document.getElementById('file-input').click()">📁 Upload Dictionary</button>
-        </div>
 
-        <div id="mode-selection" class="hidden" style="margin-top: 30px;">
-            <p style="font-weight: bold; margin-bottom: 10px;">Select Mode:</p>
-            <button class="btn mode-btn" id="m-chat" onclick="setMode('chat')">💬 Chat Mode</button>
-            <button class="btn mode-btn" id="m-quiz" onclick="setMode('quiz')" style="margin-top: 10px;">🔘 Quiz Mode</button>
-            <button class="btn primary" style="margin-top: 30px;" onclick="showChapters()">Go to Chapters ➔</button>
+    <!-- ══ SCREEN 1: SETUP / HOME ══ -->
+    <div id="screen-setup" class="screen active-screen">
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:28px 24px;">
+            <div class="setup-logo">🇳🇱</div>
+            <div class="setup-title">Dutch Mastery</div>
+            <div class="setup-sub">Load your word list to begin</div>
+
+            <label class="file-drop-zone" style="width:100%;">
+                <input type="file" id="file-input" accept=".xlsx" onchange="loadData(event)">
+                <div class="file-drop-icon">📂</div>
+                <div class="file-drop-label">Tap to load Excel file</div>
+                <div class="file-drop-hint">.xlsx format · columns: index, English, Dutch</div>
+            </label>
+
+            <div id="file-status"></div>
+
+            <button class="go-btn" id="go-btn" onclick="goToModeSelect()" disabled>
+                Continue →
+            </button>
         </div>
     </div>
 
-    <!-- SCREEN 2: CHAPTERS -->
-    <div id="screen-chapters" class="screen">
+    <!-- ══ SCREEN 2: MODE SELECT ══ -->
+    <div id="screen-mode" class="screen">
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:28px 24px; width:100%;">
+            <div class="mode-select-title">Choose Mode</div>
+            <div class="mode-select-sub" id="mode-word-count"></div>
+            <div class="mode-select-cards">
+                <div class="big-mode-card chat-card" onclick="enterMode('chat')">
+                    <div class="m-icon">💬</div>
+                    <div>
+                        <div class="m-name">Chat Mode</div>
+                        <div class="m-desc">Type the Dutch translation for each word</div>
+                    </div>
+                </div>
+                <div class="big-mode-card quiz-card" onclick="enterMode('quiz')">
+                    <div class="m-icon">🔘</div>
+                    <div>
+                        <div class="m-name">Quiz Mode</div>
+                        <div class="m-desc">Pick the correct option from four choices</div>
+                    </div>
+                </div>
+            </div>
+            <button class="back-home-btn" onclick="showScreen('screen-setup')">← Back to Home</button>
+        </div>
+    </div>
+
+    <!-- ══ SCREEN 3: CHAPTERS (CHAT) ══ -->
+    <div id="screen-chapters-chat" class="screen">
         <div class="nav-header">
-            <button class="back-btn" onclick="showScreen('screen-setup')">⇠ Setup</button>
-            <div id="active-mode-label" style="font-weight: bold; color: var(--blue);"></div>
+            <button class="back-btn" onclick="showScreen('screen-mode')">← Back</button>
+            <span class="nav-title">💬 Chat Chapters</span>
+            <div style="width:60px"></div>
         </div>
-        <h2>Chapters</h2>
-        <div id="chapter-list"></div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot l-orange"></div> In Progress</div>
+            <div class="legend-item"><div class="legend-dot l-red"></div> Retry</div>
+            <div class="legend-item"><div class="legend-dot l-green"></div> Completed</div>
+        </div>
+        <div class="chapter-scroll">
+            <div class="section-label">Select a chapter</div>
+            <div id="chapter-list-chat" class="chapter-list-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div>
+        </div>
     </div>
 
-    <!-- SCREEN 3: CHAT -->
+    <!-- ══ SCREEN 3b: CHAPTERS (QUIZ) ══ -->
+    <div id="screen-chapters-quiz" class="screen">
+        <div class="nav-header">
+            <button class="back-btn" onclick="showScreen('screen-mode')">← Back</button>
+            <span class="nav-title">🔘 Quiz Chapters</span>
+            <div style="width:60px"></div>
+        </div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot l-orange"></div> In Progress</div>
+            <div class="legend-item"><div class="legend-dot l-red"></div> Retry</div>
+            <div class="legend-item"><div class="legend-dot l-green"></div> Completed</div>
+        </div>
+        <div class="chapter-scroll">
+            <div class="section-label">Select a chapter</div>
+            <div id="chapter-list-quiz" class="chapter-list-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div>
+        </div>
+    </div>
+
+    <!-- ══ SCREEN 4: CHAT SESSION ══ -->
     <div id="screen-chat" class="screen">
         <div class="nav-header">
-            <button class="back-btn" onclick="showChapters()">⇠ Chapters</button>
-            <span id="chat-title" style="font-weight: bold;"></span>
+            <button class="back-btn" onclick="exitSession()">← Chapters</button>
+            <span class="nav-title" id="chat-chapter-title"></span>
+            <div style="width:60px"></div>
         </div>
-        <div id="chat-progress-ui" class="progress-container"></div>
+        <div class="progress-bar-wrap">
+            <div class="prog-meta">
+                <span id="chat-prog-label">0 / 0</span>
+                <span id="chat-round-badge" class="round-badge">Round 1</span>
+            </div>
+            <div class="prog-track"><div class="prog-fill" id="chat-prog-fill" style="width:0%"></div></div>
+        </div>
         <div id="chat-window"></div>
         <div class="chat-input-area">
-            <input type="text" id="chat-in" placeholder="Type Dutch translation..." autocomplete="off">
+            <input type="text" id="chat-in" placeholder="Type Dutch word..." autocomplete="off" autocorrect="off" spellcheck="false">
             <button class="send-btn" onclick="handleChatSubmit()">➔</button>
         </div>
     </div>
 
-    <!-- SCREEN 4: QUIZ -->
+    <!-- ══ SCREEN 5: QUIZ SESSION ══ -->
     <div id="screen-quiz" class="screen">
         <div class="nav-header">
-            <button class="back-btn" onclick="showChapters()">⇠ Chapters</button>
-            <span id="quiz-title" style="font-weight: bold;"></span>
+            <button class="back-btn" onclick="exitSession()">← Chapters</button>
+            <span class="nav-title" id="quiz-chapter-title"></span>
+            <div style="width:60px"></div>
         </div>
-        <div id="quiz-progress-ui" class="progress-container"></div>
-        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-            <p style="color: #888; margin-bottom: 5px;">Translate this:</p>
-            <h2 id="quiz-q" style="font-size: 32px; text-align: center; margin: 0 0 40px 0;"></h2>
-            <div id="quiz-options" style="width: 100%; display: grid; gap: 12px;"></div>
+        <div class="progress-bar-wrap">
+            <div class="prog-meta">
+                <span id="quiz-prog-label">0 / 0</span>
+                <span id="quiz-round-badge" class="round-badge">Round 1</span>
+            </div>
+            <div class="prog-track"><div class="prog-fill" id="quiz-prog-fill" style="width:0%"></div></div>
+        </div>
+        <div class="quiz-body">
+            <div class="quiz-question-card">
+                <div class="quiz-label">Translate to Dutch</div>
+                <div class="quiz-q" id="quiz-q">—</div>
+            </div>
+            <div id="quiz-options"></div>
         </div>
     </div>
+
 </div>
 
 <script>
-    let masterList = [];
+    // ─── STATE ───────────────────────────────────────────────────────────────
+    const CHAPTER_SIZE = 50;
+    let masterData = [];
+    let appMode = 'chat'; // 'chat' | 'quiz'
     let currentPool = [];
-    let appMode = 'chat'; // default
+    let retryQueue = [];
     let currentIndex = 0;
-    let currentWord = null;
+    let currentRound = 1;
     let activeChapterIdx = 0;
-    
-    // Progress tracking: { chat: [true, false...], quiz: [false, false...] }
-    let progressData = { chat: {}, quiz: {} };
 
-    // Layout Locking
-    const vp = window.visualViewport;
-    function syncLayout() {
-        const wrap = document.getElementById('app-wrapper');
-        wrap.style.height = `${vp.height}px`;
-        wrap.style.top = `${vp.offsetTop}px`;
-        window.scrollTo(0, 0);
-        if(document.getElementById('screen-chat').classList.contains('active-screen')){
-            const win = document.getElementById('chat-window');
-            win.scrollTop = win.scrollHeight;
-        }
+    // Separate progress maps per mode
+    const progressMap = { chat: {}, quiz: {} };
+
+    // ─── AUDIO ───────────────────────────────────────────────────────────────
+    function speak(text) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'nl-NL';
+        msg.rate = 0.82;
+        msg.pitch = 1;
+        window.speechSynthesis.speak(msg);
     }
-    vp.addEventListener('resize', syncLayout);
-    vp.addEventListener('scroll', syncLayout);
 
-    // Data Management
-    function loadData() {
-        const file = document.getElementById('file-input').files[0];
+    // ─── FILE LOADING ─────────────────────────────────────────────────────────
+    function loadData(e) {
+        const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const wb = XLSX.read(data, {type: 'array'});
-            masterList = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1})
-                .slice(1).filter(r => r[1] && r[2]).map(r => ({en: String(r[1]).trim(), nl: String(r[2]).trim()}));
-            document.getElementById('mode-selection').classList.remove('hidden');
-            document.getElementById('upload-section').classList.add('hidden');
+        reader.onload = (ev) => {
+            const wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+            masterData = rows.slice(1)
+                .filter(r => r[1] && r[2])
+                .map(r => ({ en: String(r[1]).trim(), nl: String(r[2]).trim() }));
+
+            if (masterData.length === 0) {
+                document.getElementById('file-status').innerText = '⚠️ No valid data found.';
+                document.getElementById('go-btn').disabled = true;
+                return;
+            }
+            document.getElementById('file-status').innerText =
+                `✅ Loaded ${masterData.length} words · ${Math.ceil(masterData.length / CHAPTER_SIZE)} chapters`;
+            document.getElementById('go-btn').disabled = false;
         };
         reader.readAsArrayBuffer(file);
     }
 
-    function setMode(m) {
-        appMode = m;
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`m-${m}`).classList.add('active');
-    }
-
-    function showChapters() {
-        document.getElementById('active-mode-label').innerText = appMode.toUpperCase() + " MODE";
-        const container = document.getElementById('chapter-list');
-        container.innerHTML = '';
-        const totalChaps = Math.ceil(masterList.length / 50);
-        
-        for(let i=0; i<totalChaps; i++) {
-            const div = document.createElement('div');
-            const isDone = progressData[appMode][i];
-            div.className = `chap-box ${isDone ? 'done' : ''}`;
-            div.innerText = i + 1;
-            div.onclick = () => startSession(i);
-            container.appendChild(div);
-        }
-        showScreen('screen-chapters');
-    }
-
-    // Session Logic
-    function startSession(idx) {
-        activeChapterIdx = idx;
-        currentPool = masterList.slice(idx * 50, (idx + 1) * 50);
-        currentIndex = 0;
-        
-        if(appMode === 'chat') {
-            document.getElementById('chat-title').innerText = `Chapter ${idx + 1}`;
-            document.getElementById('chat-window').innerHTML = '';
-            showScreen('screen-chat');
-            nextChat();
-        } else {
-            document.getElementById('quiz-title').innerText = `Chapter ${idx + 1}`;
-            showScreen('screen-quiz');
-            nextQuiz();
-        }
-    }
-
-    // Hard Quiz Generator
-    function generateDistractors(correct) {
-        let opts = new Set();
-        const vowels = ['a','e','i','o','u','aa','ee','oo','uu'];
-        while(opts.size < 3) {
-            let s = correct;
-            let r = Math.random();
-            if(r < 0.4) s = correct.replace(/[aeiou]/g, () => vowels[Math.floor(Math.random()*vowels.length)]);
-            else if(r < 0.7) s = correct.length > 3 ? correct.slice(0,-1) : correct + correct.slice(-1);
-            else {
-                let a = correct.split('');
-                let i = Math.floor(Math.random()*(a.length-1));
-                [a[i], a[i+1]] = [a[i+1], a[i]];
-                s = a.join('');
-            }
-            if(s.toLowerCase() !== correct.toLowerCase()) opts.add(s);
-        }
-        return Array.from(opts);
-    }
-
-    function nextQuiz() {
-        if(currentIndex >= currentPool.length) return endChapter();
-        currentWord = currentPool[currentIndex];
-        renderProgress('quiz-progress-ui');
-        document.getElementById('quiz-q').innerText = currentWord.en;
-        const grid = document.getElementById('quiz-options');
-        grid.innerHTML = '';
-        const opts = [currentWord.nl, ...generateDistractors(currentWord.nl)].sort(() => Math.random()-0.5);
-        opts.forEach(o => {
-            const b = document.createElement('button'); b.className = 'btn'; b.innerText = o;
-            b.onclick = () => {
-                const isRight = o.toLowerCase() === currentWord.nl.toLowerCase();
-                b.style.background = isRight ? 'var(--green)' : 'var(--red)';
-                b.style.color = 'white';
-                setTimeout(() => { currentIndex++; nextQuiz(); }, 600);
-            };
-            grid.appendChild(b);
-        });
-    }
-
-    function nextChat() {
-        if(currentIndex >= currentPool.length) return endChapter();
-        currentWord = currentPool[currentIndex];
-        renderProgress('chat-progress-ui');
-        const win = document.getElementById('chat-window');
-        const m = document.createElement('div'); m.className = 'msg bot';
-        m.innerText = `Word: "${currentWord.en}"`;
-        win.appendChild(m); 
-        win.scrollTop = win.scrollHeight;
-    }
-
-    function handleChatSubmit() {
-        const inp = document.getElementById('chat-in');
-        const val = inp.value.trim();
-        if(!val) return;
-        
-        const win = document.getElementById('chat-window');
-        const u = document.createElement('div'); u.className = 'msg user'; u.innerText = val;
-        win.appendChild(u);
-        
-        const b = document.createElement('div');
-        if(val.toLowerCase() === currentWord.nl.toLowerCase()) {
-            b.className = 'msg bot'; b.innerText = "✅ Correct!";
-        } else {
-            b.className = 'msg bot err-msg'; b.innerHTML = `❌ Wrong. Answer: <b>${currentWord.nl}</b>`;
-        }
-        win.appendChild(b);
-        win.scrollTop = win.scrollHeight;
-        inp.value = '';
-        setTimeout(() => { currentIndex++; nextChat(); }, 1000);
-    }
-
-    function endChapter() {
-        progressData[appMode][activeChapterIdx] = true;
-        alert("Chapter Complete!");
-        showChapters();
-    }
-
-    function renderProgress(id) {
-        const ui = document.getElementById(id);
-        ui.innerHTML = `<div class="num-circle start">${currentIndex+1}</div><div class="prog-track" id="bar-${id}"></div><div class="num-circle end">${currentPool.length}</div>`;
-        const bar = document.getElementById(`bar-${id}`);
-        for(let i=0; i<currentPool.length; i++) {
-            const bit = document.createElement('div');
-            bit.className = `prog-bit ${i <= currentIndex ? 'active' : ''}`;
-            bar.appendChild(bit);
-        }
-    }
-
+    // ─── NAVIGATION ──────────────────────────────────────────────────────────
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
         document.getElementById(id).classList.add('active-screen');
-        syncLayout();
+    }
+
+    function goToModeSelect() {
+        const total = Math.ceil(masterData.length / CHAPTER_SIZE);
+        document.getElementById('mode-word-count').innerText =
+            `${masterData.length} words · ${total} chapters`;
+        showScreen('screen-mode');
+    }
+
+    function enterMode(mode) {
+        appMode = mode;
+        renderChapters(mode);
+        showScreen(mode === 'chat' ? 'screen-chapters-chat' : 'screen-chapters-quiz');
+    }
+
+    function renderChapters(mode) {
+        const listId = mode === 'chat' ? 'chapter-list-chat' : 'chapter-list-quiz';
+        const list = document.getElementById(listId);
+        list.innerHTML = '';
+        const total = Math.ceil(masterData.length / CHAPTER_SIZE);
+
+        for (let i = 0; i < total; i++) {
+            const wordCount = Math.min(CHAPTER_SIZE, masterData.length - i * CHAPTER_SIZE);
+            const state = progressMap[mode][i] || '';
+            const div = document.createElement('div');
+            div.className = `chap-box${state ? ' status-' + state : ''}`;
+            div.innerHTML = `<span class="chap-num">${i + 1}</span><span class="chap-words">${wordCount}w</span>`;
+            div.onclick = () => startSession(i, mode);
+            list.appendChild(div);
+        }
+    }
+
+    function exitSession() {
+        // Re-render chapters to reflect latest status, then go back
+        renderChapters(appMode);
+        showScreen(appMode === 'chat' ? 'screen-chapters-chat' : 'screen-chapters-quiz');
+    }
+
+    // ─── SESSION START ────────────────────────────────────────────────────────
+    function startSession(idx, mode) {
+        appMode = mode;
+        activeChapterIdx = idx;
+        currentPool = masterData.slice(idx * CHAPTER_SIZE, (idx + 1) * CHAPTER_SIZE);
+        retryQueue = [];
+        currentIndex = 0;
+        currentRound = 1;
+
+        if (!progressMap[mode][idx]) {
+            progressMap[mode][idx] = 'inprogress';
+        }
+
+        if (mode === 'chat') {
+            document.getElementById('chat-chapter-title').innerText = `Chapter ${idx + 1}`;
+            document.getElementById('chat-window').innerHTML = '';
+            updateChatProgress();
+            showScreen('screen-chat');
+            setTimeout(nextChat, 200);
+        } else {
+            document.getElementById('quiz-chapter-title').innerText = `Chapter ${idx + 1}`;
+            updateQuizProgress();
+            showScreen('screen-quiz');
+            setTimeout(nextQuiz, 200);
+        }
+    }
+
+    // ─── PROGRESS ────────────────────────────────────────────────────────────
+    function updateChatProgress() {
+        const total = currentPool.length;
+        const pct = total === 0 ? 0 : Math.round((currentIndex / total) * 100);
+        document.getElementById('chat-prog-label').innerText = `${currentIndex} / ${total}`;
+        document.getElementById('chat-prog-fill').style.width = pct + '%';
+        document.getElementById('chat-round-badge').innerText = `Round ${currentRound}`;
+    }
+
+    function updateQuizProgress() {
+        const total = currentPool.length;
+        const pct = total === 0 ? 0 : Math.round((currentIndex / total) * 100);
+        document.getElementById('quiz-prog-label').innerText = `${currentIndex} / ${total}`;
+        document.getElementById('quiz-prog-fill').style.width = pct + '%';
+        document.getElementById('quiz-round-badge').innerText = `Round ${currentRound}`;
+    }
+
+    // ─── CHAT MODE ────────────────────────────────────────────────────────────
+    let chatLocked = false;
+
+    function nextChat() {
+        if (currentIndex >= currentPool.length) { endRound(); return; }
+        updateChatProgress();
+        chatLocked = false;
+        const win = document.getElementById('chat-window');
+        const word = currentPool[currentIndex];
+        const bubble = document.createElement('div');
+        bubble.className = 'msg bot';
+        bubble.innerHTML = `Translate: <b>${word.en}</b>`;
+        win.appendChild(bubble);
+        win.scrollTop = win.scrollHeight;
+
+        // Focus input after a brief delay (avoids mobile keyboard flicker)
+        setTimeout(() => document.getElementById('chat-in').focus(), 100);
+    }
+
+    function handleChatSubmit() {
+        if (chatLocked) return;
+        const inp = document.getElementById('chat-in');
+        const val = inp.value.trim();
+        if (!val) return;
+        chatLocked = true;
+
+        const word = currentPool[currentIndex];
+        const correct = val.toLowerCase() === word.nl.toLowerCase();
+        const win = document.getElementById('chat-window');
+
+        // User bubble
+        const userBubble = document.createElement('div');
+        userBubble.className = 'msg user';
+        userBubble.innerText = val;
+        win.appendChild(userBubble);
+
+        // Speak Dutch word
+        speak(word.nl);
+
+        // Response bubble
+        const resBubble = document.createElement('div');
+        if (correct) {
+            resBubble.className = 'msg correct-msg';
+            resBubble.innerText = '✅ Correct!';
+        } else {
+            resBubble.className = 'msg wrong-msg';
+            resBubble.innerHTML = `❌ Answer: <b>${word.nl}</b>`;
+            retryQueue.push(word);
+            progressMap[appMode][activeChapterIdx] = 'retry';
+        }
+        win.appendChild(resBubble);
+        inp.value = '';
+        win.scrollTop = win.scrollHeight;
+
+        currentIndex++;
+        updateChatProgress();
+        setTimeout(nextChat, 1300);
+    }
+
+    // Allow Enter key to submit
+    document.getElementById('chat-in').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleChatSubmit();
+    });
+
+    // ─── QUIZ MODE ────────────────────────────────────────────────────────────
+    function nextQuiz() {
+        if (currentIndex >= currentPool.length) { endRound(); return; }
+        updateQuizProgress();
+
+        const word = currentPool[currentIndex];
+        document.getElementById('quiz-q').innerText = word.en;
+
+        const optsDiv = document.getElementById('quiz-options');
+        optsDiv.innerHTML = '';
+
+        // Generate options: 1 correct + 3 confusing wrong ones
+        const options = [word.nl, ...generateWrong(word.nl, masterData.map(w => w.nl))];
+        shuffle(options);
+
+        options.forEach(o => {
+            const b = document.createElement('button');
+            b.className = 'quiz-opt';
+            b.innerText = o;
+            b.onclick = () => handleQuizAnswer(b, o, word, optsDiv);
+            optsDiv.appendChild(b);
+        });
+    }
+
+    function handleQuizAnswer(btn, chosen, word, optsDiv) {
+        // Disable all buttons
+        optsDiv.querySelectorAll('.quiz-opt').forEach(b => b.setAttribute('disabled', true));
+
+        const correct = chosen === word.nl;
+
+        // Highlight correct and wrong
+        optsDiv.querySelectorAll('.quiz-opt').forEach(b => {
+            if (b.innerText === word.nl) b.classList.add('correct');
+        });
+        if (!correct) {
+            btn.classList.add('wrong');
+            retryQueue.push(word);
+            progressMap[appMode][activeChapterIdx] = 'retry';
+        }
+
+        // Speak the Dutch word
+        speak(word.nl);
+
+        currentIndex++;
+        updateQuizProgress();
+        setTimeout(nextQuiz, 1400);
+    }
+
+    // ─── END ROUND / RETRY LOOP ───────────────────────────────────────────────
+    function endRound() {
+        if (retryQueue.length > 0) {
+            const errCount = retryQueue.length;
+            currentPool = [...retryQueue];
+            retryQueue = [];
+            currentIndex = 0;
+            currentRound++;
+
+            if (appMode === 'chat') {
+                const win = document.getElementById('chat-window');
+                const sys = document.createElement('div');
+                sys.className = 'msg system-msg';
+                sys.innerText = `🔁 Retry Round ${currentRound} · ${errCount} words`;
+                win.appendChild(sys);
+                win.scrollTop = win.scrollHeight;
+                updateChatProgress();
+                setTimeout(nextChat, 800);
+            } else {
+                updateQuizProgress();
+                // Brief flash before next question
+                document.getElementById('quiz-q').innerText = `🔁 Retry Round ${currentRound} · ${errCount} words`;
+                document.getElementById('quiz-options').innerHTML = '';
+                setTimeout(nextQuiz, 1200);
+            }
+        } else {
+            // All correct!
+            progressMap[appMode][activeChapterIdx] = 'completed';
+            if (appMode === 'chat') {
+                const win = document.getElementById('chat-window');
+                const sys = document.createElement('div');
+                sys.className = 'msg system-msg';
+                sys.innerText = '🎉 Chapter Mastered! 100% Correct!';
+                win.appendChild(sys);
+                win.scrollTop = win.scrollHeight;
+                setTimeout(exitSession, 1800);
+            } else {
+                document.getElementById('quiz-q').innerText = '🎉 Chapter Mastered!';
+                document.getElementById('quiz-options').innerHTML = '';
+                setTimeout(exitSession, 1800);
+            }
+        }
+    }
+
+    // ─── WRONG OPTION GENERATION ─────────────────────────────────────────────
+    /**
+     * Generate 3 confusing wrong options.
+     * Priority: similar-length words from the pool, then character shuffles.
+     */
+    function generateWrong(correct, allWords) {
+        const candidates = allWords.filter(w => w !== correct);
+        const wrong = new Set();
+
+        // 1. Try words of similar length (±2 chars) — most confusing
+        const similarLen = candidates.filter(w => Math.abs(w.length - correct.length) <= 2);
+        shuffle(similarLen);
+        for (const w of similarLen) {
+            if (wrong.size >= 3) break;
+            wrong.add(w);
+        }
+
+        // 2. Fill remaining with character-level mutations of the correct word
+        let attempts = 0;
+        while (wrong.size < 3 && attempts < 200) {
+            attempts++;
+            const mutated = mutateWord(correct);
+            if (mutated && mutated !== correct && !wrong.has(mutated)) {
+                wrong.add(mutated);
+            }
+        }
+
+        // 3. Absolute fallback
+        while (wrong.size < 3) {
+            const fb = candidates[Math.floor(Math.random() * candidates.length)];
+            if (fb) wrong.add(fb);
+            else wrong.add(correct + 'e');
+        }
+
+        return Array.from(wrong).slice(0, 3);
+    }
+
+    function mutateWord(word) {
+        if (word.length < 2) return word + 'en';
+        const type = Math.floor(Math.random() * 4);
+        const arr = word.split('');
+        const i = Math.floor(Math.random() * arr.length);
+
+        if (type === 0) {
+            // Swap adjacent chars
+            const j = Math.min(i + 1, arr.length - 1);
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        } else if (type === 1) {
+            // Add a common Dutch suffix/prefix
+            const suffixes = ['en', 'er', 'je', 'jes', 'elijk', 'ing'];
+            return word + suffixes[Math.floor(Math.random() * suffixes.length)];
+        } else if (type === 2) {
+            // Double a vowel
+            const vowels = 'aeiou';
+            if (vowels.includes(arr[i])) arr.splice(i, 0, arr[i]);
+        } else {
+            // Remove a character
+            if (arr.length > 3) arr.splice(i, 1);
+        }
+        return arr.join('');
+    }
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
     }
 </script>
 </body>
