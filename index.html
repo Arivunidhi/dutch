@@ -13,7 +13,6 @@
         }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
         html, body { 
             width: 100%; height: 100%; margin: 0; padding: 0; 
             background-color: var(--bg); overflow: hidden !important; 
@@ -30,132 +29,113 @@
         .screen { flex: 1; width: 100%; display: none; flex-direction: column; padding: 0 20px; overflow: hidden; }
         .active-screen { display: flex; }
 
-        /* Navigation Header */
-        .nav-header { width: 100%; height: 60px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; border-bottom: 1px solid #eee; margin-bottom: 10px;}
-        .back-btn { background: var(--blue-light); color: var(--blue); border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 14px;}
+        .nav-header { width: 100%; height: 60px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; border-bottom: 1px solid #eee; }
+        .back-btn { background: var(--blue-light); color: var(--blue); border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; }
 
-        /* Progress Bar */
         .progress-container { width: 100%; display: flex; align-items: center; gap: 8px; margin: 10px 0; height: 30px; flex-shrink: 0; }
-        .num-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
+        .num-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
         .num-circle.start { background: var(--orange); color: white; }
         .num-circle.end { background: #eee; color: #aaa; }
         .prog-track { flex: 1; height: 8px; background: #eee; border-radius: 10px; display: flex; gap: 2px; }
         .prog-bit { flex: 1; height: 100%; background: #eee; border-radius: 4px; }
         .prog-bit.active { background: var(--orange); }
 
-        /* Chat System */
-        #chat-window { flex: 1; overflow-y: scroll; display: flex; flex-direction: column; gap: 12px; padding: 15px 0; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
-        .msg { padding: 12px 16px; border-radius: 18px; max-width: 85%; font-size: 16px; line-height: 1.4; }
-        .bot { align-self: flex-start; background: var(--gray-light); color: var(--text); border-bottom-left-radius: 4px; }
+        #chat-window { flex: 1; overflow-y: scroll; display: flex; flex-direction: column; gap: 12px; padding: 15px 0; }
+        .msg { padding: 12px 16px; border-radius: 18px; max-width: 85%; font-size: 16px; }
+        .bot { align-self: flex-start; background: var(--gray-light); border-bottom-left-radius: 4px; }
         .user { align-self: flex-end; background: var(--blue); color: white; border-bottom-right-radius: 4px; }
-        .err-msg { border: 1px solid #ffccc7; background: #fff1f0; color: #cf1322; }
+        .err-msg { border: 1px solid var(--red); background: #fff1f0; color: var(--red); }
 
         .chat-input-area { width: 100%; background: white; border-top: 1px solid #eee; padding: 12px 0; display: flex; gap: 10px; flex-shrink: 0; margin-bottom: env(safe-area-inset-bottom); }
         .chat-input-area input { flex: 1; padding: 14px 20px; border-radius: 25px; border: 1px solid #ddd; font-size: 16px; outline: none; }
-        .send-btn { background: var(--blue); color: white; border: none; width: 48px; height: 48px; border-radius: 50%; font-size: 20px; }
+        
+        #chapter-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; overflow-y: scroll; padding-bottom: 30px; }
+        .chap-box { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid #eee; border-radius: 16px; font-weight: bold; }
+        
+        /* STATE COLORS */
+        .status-inprogress { border-color: var(--orange); background: #fff7e6; color: var(--orange); }
+        .status-retry { border-color: var(--red); background: #fff1f0; color: var(--red); }
+        .status-completed { border-color: var(--green); background: #f6ffed; color: var(--green); }
 
-        /* Chapter Grid */
-        #chapter-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; overflow-y: scroll; touch-action: pan-y; padding-bottom: 30px; }
-        .chap-box { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid #eee; border-radius: 16px; font-weight: bold; font-size: 18px; }
-        .chap-box.done { border-color: var(--green); background: #f6ffed; color: var(--green); }
-        .chap-box.done::after { content: '✓'; font-size: 12px; margin-top: 4px; }
-
-        .btn { width: 100%; padding: 18px; border-radius: 14px; font-weight: bold; border: 1px solid #eee; font-size: 16px; background: white; transition: all 0.2s; }
+        .btn { width: 100%; padding: 18px; border-radius: 14px; font-weight: bold; border: 1px solid #eee; font-size: 16px; background: white; }
         .primary { background: var(--blue); color: white; border: none; }
-        .mode-btn.active { border: 2px solid var(--blue); background: var(--blue-light); }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="app-wrapper">
-    <!-- SCREEN 1: SETUP -->
+    <!-- SETUP -->
     <div id="screen-setup" class="screen active-screen" style="justify-content: center;">
-        <h1 style="text-align: center; color: var(--blue); margin-bottom: 5px;">Dutch Mastery</h1>
-        <p style="text-align: center; color: #666; margin-bottom: 30px;">Flashcard & Chat Trainer</p>
+        <h1 style="text-align: center; color: var(--blue);">🇳🇱 Dutch Mastery</h1>
+        <button class="btn primary" onclick="document.getElementById('file-input').click()">📁 Load Dictionary</button>
+        <input type="file" id="file-input" accept=".xlsx, .csv" style="display:none" onchange="loadData()">
         
-        <div id="upload-section">
-            <input type="file" id="file-input" accept=".xlsx, .csv" style="display:none" onchange="loadData()">
-            <button class="btn primary" onclick="document.getElementById('file-input').click()">📁 Upload Dictionary</button>
-        </div>
-
         <div id="mode-selection" class="hidden" style="margin-top: 30px;">
-            <p style="font-weight: bold; margin-bottom: 10px;">Select Mode:</p>
-            <button class="btn mode-btn" id="m-chat" onclick="setMode('chat')">💬 Chat Mode</button>
-            <button class="btn mode-btn" id="m-quiz" onclick="setMode('quiz')" style="margin-top: 10px;">🔘 Quiz Mode</button>
-            <button class="btn primary" style="margin-top: 30px;" onclick="showChapters()">Go to Chapters ➔</button>
+            <button class="btn" id="m-chat" onclick="setMode('chat')">💬 Chat Mode</button>
+            <button class="btn" id="m-quiz" onclick="setMode('quiz')" style="margin-top:10px;">🔘 Quiz Mode</button>
+            <button class="btn primary" style="margin-top: 20px;" onclick="showChapters()">Enter Chapters</button>
         </div>
     </div>
 
-    <!-- SCREEN 2: CHAPTERS -->
+    <!-- CHAPTERS -->
     <div id="screen-chapters" class="screen">
         <div class="nav-header">
             <button class="back-btn" onclick="showScreen('screen-setup')">⇠ Setup</button>
-            <div id="active-mode-label" style="font-weight: bold; color: var(--blue);"></div>
+            <div id="mode-tag" style="font-weight: bold; color: var(--blue);"></div>
         </div>
-        <h2>Chapters</h2>
+        <h2 id="chap-heading">Chapters</h2>
         <div id="chapter-list"></div>
     </div>
 
-    <!-- SCREEN 3: CHAT -->
+    <!-- CHAT -->
     <div id="screen-chat" class="screen">
-        <div class="nav-header">
-            <button class="back-btn" onclick="showChapters()">⇠ Chapters</button>
-            <span id="chat-title" style="font-weight: bold;"></span>
-        </div>
+        <div class="nav-header"><button class="back-btn" onclick="confirmExit()">⇠ Exit</button></div>
         <div id="chat-progress-ui" class="progress-container"></div>
         <div id="chat-window"></div>
         <div class="chat-input-area">
-            <input type="text" id="chat-in" placeholder="Type Dutch translation..." autocomplete="off">
-            <button class="send-btn" onclick="handleChatSubmit()">➔</button>
+            <input type="text" id="chat-in" placeholder="Dutch translation..." autocomplete="off">
+            <button class="btn" style="width:50px; padding:0; border-radius:50%; background:var(--blue); color:white;" onclick="handleChatSubmit()">➔</button>
         </div>
     </div>
 
-    <!-- SCREEN 4: QUIZ -->
+    <!-- QUIZ -->
     <div id="screen-quiz" class="screen">
-        <div class="nav-header">
-            <button class="back-btn" onclick="showChapters()">⇠ Chapters</button>
-            <span id="quiz-title" style="font-weight: bold;"></span>
-        </div>
+        <div class="nav-header"><button class="back-btn" onclick="confirmExit()">⇠ Exit</button></div>
         <div id="quiz-progress-ui" class="progress-container"></div>
-        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-            <p style="color: #888; margin-bottom: 5px;">Translate this:</p>
-            <h2 id="quiz-q" style="font-size: 32px; text-align: center; margin: 0 0 40px 0;"></h2>
-            <div id="quiz-options" style="width: 100%; display: grid; gap: 12px;"></div>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+            <h2 id="quiz-q" style="font-size: 32px; text-align: center; margin-bottom: 40px;"></h2>
+            <div id="quiz-options" style="display: grid; gap: 12px;"></div>
         </div>
     </div>
 </div>
 
 <script>
-    let masterList = [];
-    let currentPool = [];
-    let appMode = 'chat'; // default
-    let currentIndex = 0;
-    let currentWord = null;
-    let activeChapterIdx = 0;
+    let masterList = [], currentPool = [], retryQueue = [];
+    let appMode = 'chat', currentIndex = 0, activeChapterIdx = 0;
     
-    // Progress tracking: { chat: [true, false...], quiz: [false, false...] }
-    let progressData = { chat: {}, quiz: {} };
+    // Progress Map: { chat: { 0: 'completed', 1: 'retry' }, quiz: {...} }
+    let progressMap = { chat: {}, quiz: {} };
 
-    // Layout Locking
+    // Layout/Keyboard Freeze
     const vp = window.visualViewport;
-    function syncLayout() {
+    function sync() {
         const wrap = document.getElementById('app-wrapper');
         wrap.style.height = `${vp.height}px`;
         wrap.style.top = `${vp.offsetTop}px`;
         window.scrollTo(0, 0);
-        if(document.getElementById('screen-chat').classList.contains('active-screen')){
-            const win = document.getElementById('chat-window');
-            win.scrollTop = win.scrollHeight;
-        }
     }
-    vp.addEventListener('resize', syncLayout);
-    vp.addEventListener('scroll', syncLayout);
+    vp.addEventListener('resize', sync);
 
-    // Data Management
+    function speak(text) {
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'nl-NL';
+        msg.rate = 0.9;
+        window.speechSynthesis.speak(msg);
+    }
+
     function loadData() {
         const file = document.getElementById('file-input').files[0];
-        if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             const data = new Uint8Array(e.target.result);
@@ -163,100 +143,89 @@
             masterList = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1})
                 .slice(1).filter(r => r[1] && r[2]).map(r => ({en: String(r[1]).trim(), nl: String(r[2]).trim()}));
             document.getElementById('mode-selection').classList.remove('hidden');
-            document.getElementById('upload-section').classList.add('hidden');
         };
         reader.readAsArrayBuffer(file);
     }
 
     function setMode(m) {
         appMode = m;
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`m-${m}`).classList.add('active');
+        document.querySelectorAll('.btn').forEach(b => b.style.borderColor = '#eee');
+        document.getElementById(`m-${m}`).style.borderColor = 'var(--blue)';
     }
 
     function showChapters() {
-        document.getElementById('active-mode-label').innerText = appMode.toUpperCase() + " MODE";
-        const container = document.getElementById('chapter-list');
-        container.innerHTML = '';
-        const totalChaps = Math.ceil(masterList.length / 50);
+        document.getElementById('mode-tag').innerText = appMode.toUpperCase();
+        const list = document.getElementById('chapter-list');
+        list.innerHTML = '';
+        const total = Math.ceil(masterList.length / 50);
         
-        for(let i=0; i<totalChaps; i++) {
+        for(let i=0; i<total; i++) {
             const div = document.createElement('div');
-            const isDone = progressData[appMode][i];
-            div.className = `chap-box ${isDone ? 'done' : ''}`;
-            div.innerText = i + 1;
-            div.onclick = () => startSession(i);
-            container.appendChild(div);
+            const status = progressMap[appMode][i] || ''; // '', 'inprogress', 'retry', 'completed'
+            div.className = `chap-box status-${status}`;
+            div.innerHTML = `<span>${i+1}</span>`;
+            div.onclick = () => startChapter(i);
+            list.appendChild(div);
         }
         showScreen('screen-chapters');
     }
 
-    // Session Logic
-    function startSession(idx) {
+    function startChapter(idx) {
         activeChapterIdx = idx;
         currentPool = masterList.slice(idx * 50, (idx + 1) * 50);
+        retryQueue = [];
         currentIndex = 0;
+        progressMap[appMode][idx] = 'inprogress';
         
         if(appMode === 'chat') {
-            document.getElementById('chat-title').innerText = `Chapter ${idx + 1}`;
             document.getElementById('chat-window').innerHTML = '';
             showScreen('screen-chat');
             nextChat();
         } else {
-            document.getElementById('quiz-title').innerText = `Chapter ${idx + 1}`;
             showScreen('screen-quiz');
             nextQuiz();
         }
     }
 
-    // Hard Quiz Generator
-    function generateDistractors(correct) {
-        let opts = new Set();
-        const vowels = ['a','e','i','o','u','aa','ee','oo','uu'];
-        while(opts.size < 3) {
-            let s = correct;
-            let r = Math.random();
-            if(r < 0.4) s = correct.replace(/[aeiou]/g, () => vowels[Math.floor(Math.random()*vowels.length)]);
-            else if(r < 0.7) s = correct.length > 3 ? correct.slice(0,-1) : correct + correct.slice(-1);
-            else {
-                let a = correct.split('');
-                let i = Math.floor(Math.random()*(a.length-1));
-                [a[i], a[i+1]] = [a[i+1], a[i]];
-                s = a.join('');
-            }
-            if(s.toLowerCase() !== correct.toLowerCase()) opts.add(s);
-        }
-        return Array.from(opts);
-    }
-
     function nextQuiz() {
-        if(currentIndex >= currentPool.length) return endChapter();
-        currentWord = currentPool[currentIndex];
+        if(currentIndex >= currentPool.length) return handleRoundEnd();
+        const word = currentPool[currentIndex];
         renderProgress('quiz-progress-ui');
-        document.getElementById('quiz-q').innerText = currentWord.en;
+        document.getElementById('quiz-q').innerText = word.en;
         const grid = document.getElementById('quiz-options');
         grid.innerHTML = '';
-        const opts = [currentWord.nl, ...generateDistractors(currentWord.nl)].sort(() => Math.random()-0.5);
+        
+        const distractors = generateDistractors(word.nl);
+        const opts = [word.nl, ...distractors].sort(() => Math.random() - 0.5);
+
         opts.forEach(o => {
-            const b = document.createElement('button'); b.className = 'btn'; b.innerText = o;
+            const b = document.createElement('button');
+            b.className = 'btn';
+            b.innerText = o;
             b.onclick = () => {
-                const isRight = o.toLowerCase() === currentWord.nl.toLowerCase();
-                b.style.background = isRight ? 'var(--green)' : 'var(--red)';
+                const isCorrect = o.toLowerCase() === word.nl.toLowerCase();
+                b.style.background = isCorrect ? 'var(--green)' : 'var(--red)';
                 b.style.color = 'white';
-                setTimeout(() => { currentIndex++; nextQuiz(); }, 600);
+                speak(word.nl);
+                if(!isCorrect) {
+                    if(!retryQueue.includes(word)) retryQueue.push(word);
+                    progressMap[appMode][activeChapterIdx] = 'retry';
+                }
+                setTimeout(() => { currentIndex++; nextQuiz(); }, 1200);
             };
             grid.appendChild(b);
         });
     }
 
     function nextChat() {
-        if(currentIndex >= currentPool.length) return endChapter();
-        currentWord = currentPool[currentIndex];
+        if(currentIndex >= currentPool.length) return handleRoundEnd();
+        const word = currentPool[currentIndex];
         renderProgress('chat-progress-ui');
         const win = document.getElementById('chat-window');
-        const m = document.createElement('div'); m.className = 'msg bot';
-        m.innerText = `Word: "${currentWord.en}"`;
-        win.appendChild(m); 
+        const m = document.createElement('div');
+        m.className = 'msg bot';
+        m.innerText = `Translate: "${word.en}"`;
+        win.appendChild(m);
         win.scrollTop = win.scrollHeight;
     }
 
@@ -264,44 +233,77 @@
         const inp = document.getElementById('chat-in');
         const val = inp.value.trim();
         if(!val) return;
+        const word = currentPool[currentIndex];
+        const isCorrect = val.toLowerCase() === word.nl.toLowerCase();
         
         const win = document.getElementById('chat-window');
         const u = document.createElement('div'); u.className = 'msg user'; u.innerText = val;
         win.appendChild(u);
-        
+
         const b = document.createElement('div');
-        if(val.toLowerCase() === currentWord.nl.toLowerCase()) {
+        speak(word.nl);
+        if(isCorrect) {
             b.className = 'msg bot'; b.innerText = "✅ Correct!";
         } else {
-            b.className = 'msg bot err-msg'; b.innerHTML = `❌ Wrong. Answer: <b>${currentWord.nl}</b>`;
+            b.className = 'msg bot err-msg'; b.innerHTML = `❌ Wrong. Answer: <b>${word.nl}</b>`;
+            if(!retryQueue.includes(word)) retryQueue.push(word);
+            progressMap[appMode][activeChapterIdx] = 'retry';
         }
         win.appendChild(b);
         win.scrollTop = win.scrollHeight;
         inp.value = '';
-        setTimeout(() => { currentIndex++; nextChat(); }, 1000);
+        setTimeout(() => { currentIndex++; nextChat(); }, 1500);
     }
 
-    function endChapter() {
-        progressData[appMode][activeChapterIdx] = true;
-        alert("Chapter Complete!");
-        showChapters();
+    function handleRoundEnd() {
+        if(retryQueue.length > 0) {
+            alert(`Round finished. Starting retry round for ${retryQueue.length} missed words.`);
+            currentPool = [...retryQueue];
+            retryQueue = [];
+            currentIndex = 0;
+            if(appMode === 'chat') {
+                const win = document.getElementById('chat-window');
+                win.innerHTML += `<div style="text-align:center; color:var(--red); padding:20px;"><b>--- Retry Round ---</b></div>`;
+                nextChat();
+            } else {
+                nextQuiz();
+            }
+        } else {
+            progressMap[appMode][activeChapterIdx] = 'completed';
+            alert("Chapter Complete! 100% Mastery.");
+            showChapters();
+        }
+    }
+
+    function generateDistractors(correct) {
+        let s = new Set();
+        const v = ['a','e','i','o','u','aa','ee'];
+        while(s.size < 3) {
+            let m = correct;
+            if(Math.random() > 0.5) m = correct.replace(/[aeiou]/g, () => v[Math.floor(Math.random()*v.length)]);
+            else m = correct.split('').sort(() => Math.random()-0.5).join('');
+            if(m !== correct) s.add(m);
+        }
+        return Array.from(s);
     }
 
     function renderProgress(id) {
         const ui = document.getElementById(id);
-        ui.innerHTML = `<div class="num-circle start">${currentIndex+1}</div><div class="prog-track" id="bar-${id}"></div><div class="num-circle end">${currentPool.length}</div>`;
+        const total = currentPool.length;
+        ui.innerHTML = `<div class="num-circle start">${currentIndex+1}</div><div class="prog-track" id="bar-${id}"></div><div class="num-circle end">${total}</div>`;
         const bar = document.getElementById(`bar-${id}`);
-        for(let i=0; i<currentPool.length; i++) {
+        for(let i=0; i<total; i++) {
             const bit = document.createElement('div');
             bit.className = `prog-bit ${i <= currentIndex ? 'active' : ''}`;
             bar.appendChild(bit);
         }
     }
 
+    function confirmExit() { if(confirm("Progress in this round will be lost. Exit?")) showChapters(); }
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
         document.getElementById(id).classList.add('active-screen');
-        syncLayout();
+        sync();
     }
 </script>
 </body>
