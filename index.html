@@ -18,11 +18,8 @@
             width: 100%; height: 100%; margin: 0; padding: 0; 
             background-color: var(--bg); overflow: hidden !important; 
             position: fixed; left: 0; top: 0; touch-action: none; 
+            font-family: -apple-system, system-ui, sans-serif;
         }
-
-        /* Scrollbar Removal */
-        #chat-window::-webkit-scrollbar, #chapter-list::-webkit-scrollbar { display: none; }
-        #chat-window, #chapter-list { -ms-overflow-style: none; scrollbar-width: none; }
 
         #app-wrapper {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -33,100 +30,129 @@
         .screen { flex: 1; width: 100%; display: none; flex-direction: column; padding: 0 20px; overflow: hidden; }
         .active-screen { display: flex; }
 
-        .nav-header { width: 100%; height: 50px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-        .back-btn { background: var(--blue-light); color: var(--blue); border: none; padding: 6px 14px; border-radius: 8px; font-weight: bold; }
+        /* Navigation Header */
+        .nav-header { width: 100%; height: 60px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; border-bottom: 1px solid #eee; margin-bottom: 10px;}
+        .back-btn { background: var(--blue-light); color: var(--blue); border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 14px;}
 
-        .progress-container { width: 100%; display: flex; align-items: center; gap: 8px; margin: 5px 0 15px 0; height: 30px; flex-shrink: 0; }
-        .num-circle { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
+        /* Progress Bar */
+        .progress-container { width: 100%; display: flex; align-items: center; gap: 8px; margin: 10px 0; height: 30px; flex-shrink: 0; }
+        .num-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
         .num-circle.start { background: var(--orange); color: white; }
         .num-circle.end { background: #eee; color: #aaa; }
-        .prog-track { flex: 1; height: 6px; background: #eee; border-radius: 10px; display: flex; gap: 2px; }
-        .prog-bit { flex: 1; height: 100%; background: #eee; border-radius: 10px; }
+        .prog-track { flex: 1; height: 8px; background: #eee; border-radius: 10px; display: flex; gap: 2px; }
+        .prog-bit { flex: 1; height: 100%; background: #eee; border-radius: 4px; }
         .prog-bit.active { background: var(--orange); }
 
-        #chat-window { flex: 1; overflow-y: scroll; display: flex; flex-direction: column; gap: 12px; padding: 10px 0; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
-        .msg { padding: 10px 16px; border-radius: 18px; max-width: 80%; font-size: 16px; }
-        .bot { align-self: flex-start; background: var(--gray-light); }
-        .user { align-self: flex-end; background: var(--blue); color: white; }
-        .err-msg { align-self: flex-start; background: #fff1f0; border: 1px solid #ffccc7; color: #cf1322; }
+        /* Chat System */
+        #chat-window { flex: 1; overflow-y: scroll; display: flex; flex-direction: column; gap: 12px; padding: 15px 0; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+        .msg { padding: 12px 16px; border-radius: 18px; max-width: 85%; font-size: 16px; line-height: 1.4; }
+        .bot { align-self: flex-start; background: var(--gray-light); color: var(--text); border-bottom-left-radius: 4px; }
+        .user { align-self: flex-end; background: var(--blue); color: white; border-bottom-right-radius: 4px; }
+        .err-msg { border: 1px solid #ffccc7; background: #fff1f0; color: #cf1322; }
 
-        .chat-input-area { width: 100%; background: white; border-top: 1px solid #eee; padding: 10px 0; display: flex; gap: 10px; flex-shrink: 0; margin-bottom: env(safe-area-inset-bottom); }
-        .chat-input-area input { flex: 1; padding: 12px 18px; border-radius: 25px; border: 1px solid #ddd; font-size: 16px; outline: none; }
-        .send-btn { background: var(--blue); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; }
+        .chat-input-area { width: 100%; background: white; border-top: 1px solid #eee; padding: 12px 0; display: flex; gap: 10px; flex-shrink: 0; margin-bottom: env(safe-area-inset-bottom); }
+        .chat-input-area input { flex: 1; padding: 14px 20px; border-radius: 25px; border: 1px solid #ddd; font-size: 16px; outline: none; }
+        .send-btn { background: var(--blue); color: white; border: none; width: 48px; height: 48px; border-radius: 50%; font-size: 20px; }
 
-        #chapter-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; overflow-y: scroll; touch-action: pan-y; padding-bottom: 20px; }
-        .chap-box { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 2px solid #eee; border-radius: 15px; font-weight: bold; position: relative; }
+        /* Chapter Grid */
+        #chapter-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; overflow-y: scroll; touch-action: pan-y; padding-bottom: 30px; }
+        .chap-box { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid #eee; border-radius: 16px; font-weight: bold; font-size: 18px; }
         .chap-box.done { border-color: var(--green); background: #f6ffed; color: var(--green); }
-        .btn { width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; border: 1px solid #eee; font-size: 16px; background: white; margin-bottom: 10px; }
+        .chap-box.done::after { content: '✓'; font-size: 12px; margin-top: 4px; }
+
+        .btn { width: 100%; padding: 18px; border-radius: 14px; font-weight: bold; border: 1px solid #eee; font-size: 16px; background: white; transition: all 0.2s; }
         .primary { background: var(--blue); color: white; border: none; }
+        .mode-btn.active { border: 2px solid var(--blue); background: var(--blue-light); }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="app-wrapper">
-    <!-- SETUP SCREEN -->
+    <!-- SCREEN 1: SETUP -->
     <div id="screen-setup" class="screen active-screen" style="justify-content: center;">
-        <h1 style="text-align: center; color: var(--blue);">🇳🇱 Dutch Mastery</h1>
-        <input type="file" id="file-input" accept=".xlsx, .csv" style="margin-bottom: 20px;">
-        <button class="btn primary" onclick="loadData()">Upload File</button>
-        <div id="mode-zone" class="hidden">
-            <h3 style="text-align: center;">Select Learning Mode</h3>
-            <button class="btn" id="m-chat" onclick="setMode('chat')">💬 Chat Practice</button>
-            <button class="btn" id="m-quiz" onclick="setMode('quiz')">🔘 Hard Quiz</button>
+        <h1 style="text-align: center; color: var(--blue); margin-bottom: 5px;">Dutch Mastery</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">Flashcard & Chat Trainer</p>
+        
+        <div id="upload-section">
+            <input type="file" id="file-input" accept=".xlsx, .csv" style="display:none" onchange="loadData()">
+            <button class="btn primary" onclick="document.getElementById('file-input').click()">📁 Upload Dictionary</button>
+        </div>
+
+        <div id="mode-selection" class="hidden" style="margin-top: 30px;">
+            <p style="font-weight: bold; margin-bottom: 10px;">Select Mode:</p>
+            <button class="btn mode-btn" id="m-chat" onclick="setMode('chat')">💬 Chat Mode</button>
+            <button class="btn mode-btn" id="m-quiz" onclick="setMode('quiz')" style="margin-top: 10px;">🔘 Quiz Mode</button>
+            <button class="btn primary" style="margin-top: 30px;" onclick="showChapters()">Go to Chapters ➔</button>
         </div>
     </div>
 
-    <!-- CHAPTER SCREEN -->
+    <!-- SCREEN 2: CHAPTERS -->
     <div id="screen-chapters" class="screen">
         <div class="nav-header">
-            <button class="back-btn" onclick="showScreen('screen-setup')">⇠ Main</button>
-            <span id="mode-indicator" style="font-weight: bold; color: var(--orange);"></span>
+            <button class="back-btn" onclick="showScreen('screen-setup')">⇠ Setup</button>
+            <div id="active-mode-label" style="font-weight: bold; color: var(--blue);"></div>
         </div>
         <h2>Chapters</h2>
         <div id="chapter-list"></div>
     </div>
 
-    <!-- CHAT SCREEN -->
+    <!-- SCREEN 3: CHAT -->
     <div id="screen-chat" class="screen">
-        <div class="nav-header"><button class="back-btn" onclick="exitSession()">⇠ Chapters</button></div>
+        <div class="nav-header">
+            <button class="back-btn" onclick="showChapters()">⇠ Chapters</button>
+            <span id="chat-title" style="font-weight: bold;"></span>
+        </div>
         <div id="chat-progress-ui" class="progress-container"></div>
         <div id="chat-window"></div>
         <div class="chat-input-area">
-            <input type="text" id="chat-in" placeholder="Translate to Dutch..." autocomplete="off">
+            <input type="text" id="chat-in" placeholder="Type Dutch translation..." autocomplete="off">
             <button class="send-btn" onclick="handleChatSubmit()">➔</button>
         </div>
     </div>
 
-    <!-- QUIZ SCREEN -->
+    <!-- SCREEN 4: QUIZ -->
     <div id="screen-quiz" class="screen">
-        <div class="nav-header"><button class="back-btn" onclick="exitSession()">⇠ Chapters</button></div>
+        <div class="nav-header">
+            <button class="back-btn" onclick="showChapters()">⇠ Chapters</button>
+            <span id="quiz-title" style="font-weight: bold;"></span>
+        </div>
         <div id="quiz-progress-ui" class="progress-container"></div>
         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-            <h2 id="quiz-q" style="font-size: 28px; text-align: center; margin-bottom: 30px;"></h2>
+            <p style="color: #888; margin-bottom: 5px;">Translate this:</p>
+            <h2 id="quiz-q" style="font-size: 32px; text-align: center; margin: 0 0 40px 0;"></h2>
             <div id="quiz-options" style="width: 100%; display: grid; gap: 12px;"></div>
         </div>
     </div>
 </div>
 
 <script>
-    let masterList = [], currentPool = [], appMode = 'chat', currentIndex = 0, currentWord = null;
-    let progressState = { chat: {}, quiz: {} }; // Stores "done" status per chapter index
+    let masterList = [];
+    let currentPool = [];
+    let appMode = 'chat'; // default
+    let currentIndex = 0;
+    let currentWord = null;
+    let activeChapterIdx = 0;
+    
+    // Progress tracking: { chat: [true, false...], quiz: [false, false...] }
+    let progressData = { chat: {}, quiz: {} };
 
+    // Layout Locking
     const vp = window.visualViewport;
-    function sync() {
+    function syncLayout() {
         const wrap = document.getElementById('app-wrapper');
         wrap.style.height = `${vp.height}px`;
         wrap.style.top = `${vp.offsetTop}px`;
         window.scrollTo(0, 0);
-        if(appMode === 'chat') {
+        if(document.getElementById('screen-chat').classList.contains('active-screen')){
             const win = document.getElementById('chat-window');
-            if(win) win.scrollTop = win.scrollHeight;
+            win.scrollTop = win.scrollHeight;
         }
     }
-    vp.addEventListener('resize', sync);
-    vp.addEventListener('scroll', sync);
+    vp.addEventListener('resize', syncLayout);
+    vp.addEventListener('scroll', syncLayout);
 
+    // Data Management
     function loadData() {
         const file = document.getElementById('file-input').files[0];
         if (!file) return;
@@ -136,46 +162,54 @@
             const wb = XLSX.read(data, {type: 'array'});
             masterList = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1})
                 .slice(1).filter(r => r[1] && r[2]).map(r => ({en: String(r[1]).trim(), nl: String(r[2]).trim()}));
-            document.getElementById('mode-zone').classList.remove('hidden');
+            document.getElementById('mode-selection').classList.remove('hidden');
+            document.getElementById('upload-section').classList.add('hidden');
         };
         reader.readAsArrayBuffer(file);
     }
 
     function setMode(m) {
         appMode = m;
-        document.getElementById('mode-indicator').innerText = m.toUpperCase();
-        renderChapters();
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`m-${m}`).classList.add('active');
+    }
+
+    function showChapters() {
+        document.getElementById('active-mode-label').innerText = appMode.toUpperCase() + " MODE";
+        const container = document.getElementById('chapter-list');
+        container.innerHTML = '';
+        const totalChaps = Math.ceil(masterList.length / 50);
+        
+        for(let i=0; i<totalChaps; i++) {
+            const div = document.createElement('div');
+            const isDone = progressData[appMode][i];
+            div.className = `chap-box ${isDone ? 'done' : ''}`;
+            div.innerText = i + 1;
+            div.onclick = () => startSession(i);
+            container.appendChild(div);
+        }
         showScreen('screen-chapters');
     }
 
-    function renderChapters() {
-        const container = document.getElementById('chapter-list');
-        container.innerHTML = '';
-        const total = Math.ceil(masterList.length / 50);
-        for(let i=0; i<total; i++) {
-            const div = document.createElement('div');
-            div.className = `chap-box ${progressState[appMode][i] ? 'done' : ''}`;
-            div.innerText = i + 1;
-            div.onclick = () => startChapter(i);
-            container.appendChild(div);
-        }
-    }
-
-    let activeChapterIdx = 0;
-    function startChapter(idx) {
+    // Session Logic
+    function startSession(idx) {
         activeChapterIdx = idx;
         currentPool = masterList.slice(idx * 50, (idx + 1) * 50);
         currentIndex = 0;
+        
         if(appMode === 'chat') {
+            document.getElementById('chat-title').innerText = `Chapter ${idx + 1}`;
             document.getElementById('chat-window').innerHTML = '';
             showScreen('screen-chat');
             nextChat();
         } else {
+            document.getElementById('quiz-title').innerText = `Chapter ${idx + 1}`;
             showScreen('screen-quiz');
             nextQuiz();
         }
     }
 
+    // Hard Quiz Generator
     function generateDistractors(correct) {
         let opts = new Set();
         const vowels = ['a','e','i','o','u','aa','ee','oo','uu'];
@@ -196,7 +230,7 @@
     }
 
     function nextQuiz() {
-        if(currentIndex >= currentPool.length) return finishChapter();
+        if(currentIndex >= currentPool.length) return endChapter();
         currentWord = currentPool[currentIndex];
         renderProgress('quiz-progress-ui');
         document.getElementById('quiz-q').innerText = currentWord.en;
@@ -206,7 +240,8 @@
         opts.forEach(o => {
             const b = document.createElement('button'); b.className = 'btn'; b.innerText = o;
             b.onclick = () => {
-                b.style.background = o === currentWord.nl ? 'var(--green)' : 'var(--red)';
+                const isRight = o.toLowerCase() === currentWord.nl.toLowerCase();
+                b.style.background = isRight ? 'var(--green)' : 'var(--red)';
                 b.style.color = 'white';
                 setTimeout(() => { currentIndex++; nextQuiz(); }, 600);
             };
@@ -215,42 +250,41 @@
     }
 
     function nextChat() {
-        if(currentIndex >= currentPool.length) return finishChapter();
+        if(currentIndex >= currentPool.length) return endChapter();
         currentWord = currentPool[currentIndex];
         renderProgress('chat-progress-ui');
         const win = document.getElementById('chat-window');
         const m = document.createElement('div'); m.className = 'msg bot';
-        m.innerText = `How do you say: "${currentWord.en}"?`;
-        win.appendChild(m); win.scrollTop = win.scrollHeight;
+        m.innerText = `Word: "${currentWord.en}"`;
+        win.appendChild(m); 
+        win.scrollTop = win.scrollHeight;
     }
 
     function handleChatSubmit() {
         const inp = document.getElementById('chat-in');
         const val = inp.value.trim();
         if(!val) return;
+        
         const win = document.getElementById('chat-window');
         const u = document.createElement('div'); u.className = 'msg user'; u.innerText = val;
         win.appendChild(u);
+        
         const b = document.createElement('div');
         if(val.toLowerCase() === currentWord.nl.toLowerCase()) {
-            b.className = 'msg bot'; b.innerText = "✅ Perfect!";
+            b.className = 'msg bot'; b.innerText = "✅ Correct!";
         } else {
-            b.className = 'msg bot err-msg'; b.innerHTML = `❌ Incorrect. Correct: <b>${currentWord.nl}</b>`;
+            b.className = 'msg bot err-msg'; b.innerHTML = `❌ Wrong. Answer: <b>${currentWord.nl}</b>`;
         }
         win.appendChild(b);
         win.scrollTop = win.scrollHeight;
         inp.value = '';
-        setTimeout(() => { currentIndex++; nextChat(); }, 1200);
+        setTimeout(() => { currentIndex++; nextChat(); }, 1000);
     }
 
-    function finishChapter() {
-        progressState[appMode][activeChapterIdx] = true;
-        exitSession();
-    }
-
-    function exitSession() {
-        renderChapters();
-        showScreen('screen-chapters');
+    function endChapter() {
+        progressData[appMode][activeChapterIdx] = true;
+        alert("Chapter Complete!");
+        showChapters();
     }
 
     function renderProgress(id) {
@@ -267,7 +301,7 @@
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
         document.getElementById(id).classList.add('active-screen');
-        sync();
+        syncLayout();
     }
 </script>
 </body>
