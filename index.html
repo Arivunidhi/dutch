@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-    <title>Dutch Mastery Elite</title>
+    <title>Dutch Mastery Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <style>
@@ -33,12 +33,15 @@
             color: var(--text);
             overflow: hidden;
             position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
         }
 
         #app-wrapper {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            position: fixed; top: 0; left: 0; right: 0;
+            bottom: 0;
             display: flex; flex-direction: column;
             padding-top: env(safe-area-inset-top);
+            /* Will be updated by JS when keyboard opens */
         }
 
         /* ── SCREENS ── */
@@ -689,36 +692,37 @@
 
     // ─── WRONG OPTION GENERATION ─────────────────────────────────────────────
     /**
-     * Generate 3 confusing wrong options.
-     * Priority: similar-length words from the pool, then character shuffles.
+     * Generate 3 wrong options that look visually similar to the correct Dutch word.
+     * Mutations: swap vowel for similar vowel, double a letter, remove a letter,
+     * add/change a suffix — all stay close to the original so they're genuinely tricky.
      */
     function generateWrong(correct, allWords) {
-        const candidates = allWords.filter(w => w !== correct);
         const wrong = new Set();
 
-        // 1. Try words of similar length (±2 chars) — most confusing
-        const similarLen = candidates.filter(w => Math.abs(w.length - correct.length) <= 2);
-        shuffle(similarLen);
-        for (const w of similarLen) {
-            if (wrong.size >= 3) break;
-            wrong.add(w);
-        }
-
-        // 2. Fill remaining with character-level mutations of the correct word
+        // First try: letter-level mutations of the correct word (most confusing)
         let attempts = 0;
-        while (wrong.size < 3 && attempts < 200) {
+        while (wrong.size < 3 && attempts < 300) {
             attempts++;
             const mutated = mutateWord(correct);
-            if (mutated && mutated !== correct && !wrong.has(mutated)) {
+            if (mutated && mutated !== correct && !wrong.has(mutated) && mutated.length >= 2) {
                 wrong.add(mutated);
             }
         }
 
-        // 3. Absolute fallback
+        // Fallback: similar-length real words from the pool
+        if (wrong.size < 3) {
+            const candidates = allWords.filter(w => w !== correct && !wrong.has(w));
+            const similarLen = candidates.filter(w => Math.abs(w.length - correct.length) <= 2);
+            shuffle(similarLen);
+            for (const w of similarLen) {
+                if (wrong.size >= 3) break;
+                wrong.add(w);
+            }
+        }
+
+        // Absolute fallback
         while (wrong.size < 3) {
-            const fb = candidates[Math.floor(Math.random() * candidates.length)];
-            if (fb) wrong.add(fb);
-            else wrong.add(correct + 'e');
+            wrong.add(correct + ['e','en','je'][wrong.size]);
         }
 
         return Array.from(wrong).slice(0, 3);
@@ -726,27 +730,86 @@
 
     function mutateWord(word) {
         if (word.length < 2) return word + 'en';
-        const type = Math.floor(Math.random() * 4);
-        const arr = word.split('');
-        const i = Math.floor(Math.random() * arr.length);
+
+        // Dutch vowel look-alikes: swap one vowel for a visually close one
+        const vowelSwaps = {
+            'a': ['e', 'aa', 'ae'],
+            'aa': ['a', 'ae', 'ah'],
+            'e': ['a', 'ee', 'ei'],
+            'ee': ['e', 'ie', 'oe'],
+            'i': ['ie', 'ij', 'y'],
+            'ie': ['i', 'ij', 'ee'],
+            'ij': ['ei', 'ie', 'i'],
+            'ei': ['ij', 'ai', 'e'],
+            'o': ['oo', 'oe', 'ou'],
+            'oo': ['o', 'oe', 'ou'],
+            'oe': ['oo', 'o', 'eu'],
+            'u': ['uu', 'eu', 'ou'],
+            'uu': ['u', 'eu', 'ui'],
+            'eu': ['uu', 'u', 'oe'],
+            'ou': ['au', 'oo', 'o'],
+            'au': ['ou', 'aa', 'ao'],
+            'ui': ['uu', 'u', 'oi'],
+        };
+
+        const type = Math.floor(Math.random() * 5);
 
         if (type === 0) {
-            // Swap adjacent chars
-            const j = Math.min(i + 1, arr.length - 1);
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        } else if (type === 1) {
-            // Add a common Dutch suffix/prefix
-            const suffixes = ['en', 'er', 'je', 'jes', 'elijk', 'ing'];
-            return word + suffixes[Math.floor(Math.random() * suffixes.length)];
-        } else if (type === 2) {
-            // Double a vowel
-            const vowels = 'aeiou';
-            if (vowels.includes(arr[i])) arr.splice(i, 0, arr[i]);
-        } else {
-            // Remove a character
-            if (arr.length > 3) arr.splice(i, 1);
+            // Vowel swap: try digraphs first, then single vowels
+            const digraphs = Object.keys(vowelSwaps).filter(k => k.length === 2);
+            for (const dg of shuffle([...digraphs])) {
+                const idx = word.toLowerCase().indexOf(dg);
+                if (idx !== -1) {
+                    const replacements = vowelSwaps[dg];
+                    const rep = replacements[Math.floor(Math.random() * replacements.length)];
+                    return word.slice(0, idx) + rep + word.slice(idx + dg.length);
+                }
+            }
+            // Single vowel fallback
+            const singles = ['a','e','i','o','u'];
+            for (let i = 0; i < word.length; i++) {
+                const ch = word[i].toLowerCase();
+                if (vowelSwaps[ch]) {
+                    const rep = vowelSwaps[ch][Math.floor(Math.random() * vowelSwaps[ch].length)];
+                    return word.slice(0, i) + rep + word.slice(i + 1);
+                }
+            }
         }
-        return arr.join('');
+
+        if (type === 1) {
+            // Double a random letter (e.g. maand → maaand, mand → maand)
+            const i = Math.floor(Math.random() * word.length);
+            return word.slice(0, i) + word[i] + word.slice(i);
+        }
+
+        if (type === 2) {
+            // Remove one letter (e.g. maand → mand, maan)
+            if (word.length > 3) {
+                const i = Math.floor(Math.random() * word.length);
+                return word.slice(0, i) + word.slice(i + 1);
+            }
+        }
+
+        if (type === 3) {
+            // Add/change ending (e.g. maand → maande, maands, maanden)
+            const endings = ['e', 'en', 's', 'de', 'je', 'er', 'te'];
+            const end = endings[Math.floor(Math.random() * endings.length)];
+            // Sometimes replace last char, sometimes append
+            if (Math.random() < 0.5 && word.length > 3) {
+                return word.slice(0, -1) + end;
+            }
+            return word + end;
+        }
+
+        if (type === 4) {
+            // Swap two adjacent characters (e.g. mand → amnd, madn)
+            const arr = word.split('');
+            const i = Math.floor(Math.random() * (arr.length - 1));
+            [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+            return arr.join('');
+        }
+
+        return word + 'e';
     }
 
     function shuffle(arr) {
@@ -756,6 +819,33 @@
         }
         return arr;
     }
+
+    // ─── iOS KEYBOARD FIX ────────────────────────────────────────────────────
+    // When the iOS keyboard opens, Safari shrinks the viewport but the page
+    // can scroll up. We pin #app-wrapper to the visual viewport height so
+    // everything stays visible and in place.
+    (function() {
+        const wrapper = document.getElementById('app-wrapper');
+
+        function applyViewportHeight() {
+            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            const offsetTop = window.visualViewport ? window.visualViewport.offsetTop : 0;
+            wrapper.style.height = vh + 'px';
+            wrapper.style.top = offsetTop + 'px';
+            // Scroll chat window to bottom so latest message stays visible
+            const chatWin = document.getElementById('chat-window');
+            if (chatWin) chatWin.scrollTop = chatWin.scrollHeight;
+        }
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', applyViewportHeight);
+            window.visualViewport.addEventListener('scroll', applyViewportHeight);
+        } else {
+            window.addEventListener('resize', applyViewportHeight);
+        }
+
+        applyViewportHeight();
+    })();
 </script>
 </body>
 </html>
